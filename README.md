@@ -20,5 +20,5 @@ Hinweis: Registry-Pfad variiert je nach Chromium-Browser
 
 ### Derzeitiger Stand
  - Downloads werden abgebrochen, sofern nicht Pfad aus `gpoDownloadPath` gewählt wurde
- - derzeit erfolgt nur eine Konsolenausgabe > TODO: Popup
- - Protokollierung aller Downloads erfolgt derzeit auf Konsole > TODO: Möglichkeiten für Dateisystemzugriffe o.ä. umsetzen
+ - derzeit erfolgt nur eine Konsolenausgabe > Popup: [Issue #1](/../../issues/1)
+ - Protokollierung aller Downloads erfolgt derzeit auf Konsole > Dateisystemzugriffe o.ä. [Issue #2](/../../issues/2)
