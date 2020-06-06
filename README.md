@@ -1,6 +1,8 @@
 # Chromium-Erweiterung: Download-Richtlinie
 
+<br/>
 > :warning: **Hinweis**: Erweiterung befindet sich noch in der Entwicklung!
+<br/>
 
 Chromium bietet die Möglichkeit, über Gruppenrichtlinien den Download-Pfad zu erzwingen.
 Problem: Downloads über die Kontextmenü-Funktion `(Bild|Link|...) Speichern unter` können nicht kontrolliert werden.
