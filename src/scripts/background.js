@@ -1,14 +1,32 @@
+/**
+ * Cache für Datenaustausch mit popup.js
+ */
+var sharedData = {
+    lastError: {
+        title: "",
+        msg: ""
+    }
+}
 
 /**
  * Installation der Listener
  */
 chrome.runtime.onInstalled.addListener(function() {
 
+
+
     // Registry-Werte einlesen/testen
     console.log("Policies werden eingelesen ...");
     chrome.storage.managed.get(function(value) {
         console.log(value);
     });
+
+    // https://github.com/KNGP14/chromium-download-policy/issues/1
+    // Hilfsfunktion: Badge als Hinweis für Nutzer an Icon platzieren
+    function addErrorBadge() {
+        chrome.browserAction.setBadgeText({text: "!"});
+        chrome.browserAction.setBadgeBackgroundColor({ color: [171, 42, 7, 255] });
+    }
 
     /**
      * Erkennung eines Dateidownloads
@@ -33,11 +51,15 @@ chrome.runtime.onInstalled.addListener(function() {
         chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
             downloadPath = value.gpoDownloadPath;
             if (item.filename != "" && !item.filename.startsWith(downloadPath)) {
-                console.log(`Compliance-Verstoß: Download erfolgt nicht nach ${downloadPath} ! Download wird abgebrochen ...`);
+                sharedData.lastError.title = `Compliance-Verstoß`;
+                sharedData.lastError.msg = `Download erfolgte nicht nach: "${downloadPath}"`;
+                console.log(`${sharedData.lastError.title}: ${sharedData.lastError.msg} Download wird abgebrochen ...`);
 
                 // Download abbrechen
                 chrome.downloads.cancel(item.id, function() {
-                    console.log("Download wurde abgebrochen.");
+                    sharedData.lastError.msg += `\n Download wurde abgebrochen!`
+                    addErrorBadge();
+                    console.log("Download wurde abgebrochen und Badge aktualisiert");
                 })
             }
         });
@@ -66,12 +88,16 @@ chrome.runtime.onInstalled.addListener(function() {
             chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
                 downloadPath = value.gpoDownloadPath;
                 if (!changed.filename.current.startsWith(downloadPath)) {
-                    console.log(`Compliance-Verstoß: Download erfolgt nicht nach ${downloadPath} ! Download wird abgebrochen ...`);
+                    sharedData.lastError.title = `Compliance-Verstoß`;
+                    sharedData.lastError.msg = `Download erfolgte nicht nach: "${downloadPath}"`;
+                    console.log(`${sharedData.lastError.title}: ${sharedData.lastError.msg} Download wird abgebrochen ...`);
 
                     // Download abbrechen
-                    chrome.downloads.cancel(changed.id, function() {
-                        console.log("Download wurde abgebrochen");
-                    });
+                    chrome.downloads.cancel(item.id, function() {
+                        sharedData.lastError.msg += `\n Download wurde abgebrochen!`
+                        addErrorBadge();
+                        console.log("Download wurde abgebrochen und Badge aktualisiert");
+                    })
                 }
             });
             
