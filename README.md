@@ -18,3 +18,6 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
  - Downloads werden abgebrochen, sofern nicht Pfad aus `gpoDownloadPath` gewählt wurde
  - derzeit erfolgt nur eine Konsolenausgabe > Popup: [Issue #1](/../../issues/1)
  - Protokollierung aller Downloads erfolgt derzeit auf Konsole > Dateisystemzugriffe o.ä. [Issue #2](/../../issues/2)
+ 
+![alt text](https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png?raw=true)
+![alt text](https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png?raw=true)
