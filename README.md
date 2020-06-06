@@ -12,7 +12,8 @@ Mithilfe dieser Erweiterung soll der Download auch über das Konktextmenü auf e
 Zusätzlich soll eine umfangreiche Protokollierung der Downloads erfolgen.
 
 ### Registry-Einträge
-Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades ist jeweils ein Registry-Einträg zu erstellen:
+Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades ist jeweils ein Registry-Einträg zu erstellen.
+Hinweis: Registry-Pfad variiert je nach Chromium-Browser
 `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Edge\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
  - `gpoDownloadPath (REG_SZ)`
  - `gpoLogPath (REG_SZ)`
