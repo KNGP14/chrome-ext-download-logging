@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erweiterungsoptionen</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="options">
+        <div class="options-header-title">Download-Protokollierung</div>
+        <div class="options-header-subtitle">Protokollierung aller Downloads und Blockierung nicht erlaubter Downloadpfade (inkl. "Speichern Unter")</div>
+        <div class="options-block">
+            <div class="options-headline">Angewandte Richtlinien</div>
+            <div class="options-option">
+                <label for="downloadPath">Download-Pfad:</label><br>
+                <input type="text" id="downloadPath" disabled="true">
+            </div>
+            <div class="options-option">
+                <label for="logPath">Protokoll-Pfad:</label><br>
+                <input type="text" id="logPath" disabled="true">
+            </div>
+        </div>
+        <div class="options-block">
+            <div class="options-headline">Registry-Pfad für Richtlinien zur Anwendung &uuml;ber Gruppenrichtlinien</div>
+            <div class="options-option">
+                <div id="regPath"></div>
+                <ul id="regValues"></ul>
+            </div>
+        </div>
+    </div>
+    <script src="js/options.js"></script>
+</body>
+</html>

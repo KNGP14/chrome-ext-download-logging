@@ -1,0 +1,130 @@
+/* Variablen */
+:root {
+    --light-bg-color: #FFFFFF;
+    --light-font-color: #000000;
+    --light-link-color: #6982A2;
+
+    --dark-bg-color: #3B3B3D;
+    --dark-font-color: #FFFFFF;
+    --dark-link-color: #8795A7;
+}
+
+/* Globale Styles */
+* {
+    font-family: "system-ui", Helvetica, sans-serif, sans-serif;
+    font-size: 1.05em;
+}
+body {
+    margin: 0px;
+    background: var(--light-bg-color) !important;
+    color: var(--light-font-color) !important;
+}
+button {
+    height: 30px;
+    outline: none;
+}
+ul {
+    margin: 0em;
+    margin-top: 0.2em;
+    padding-left: 2em;
+}
+li {
+    margin-bottom: 0.1em;
+}
+a, .link {
+    border-bottom: 1px solid var(--light-link-color);
+    text-decoration: none;
+    color: var(--light-link-color);
+    padding-bottom: 1px;
+    cursor: pointer;
+}
+.link-container {
+    padding-bottom: 2px;
+}
+.flex-horizontal {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+
+/* Style für Popup */
+div.popup {
+    width: 300px;
+}
+.popup-header-title {
+    font-size: 1.3em;
+    font-weight: 600;
+}
+.popup-panel {
+    margin: 16px;
+    display: flex;
+}
+.popup-panel:nth-of-type(1) {
+    margin-bottom: 0px;
+}
+.popup-app-logo {
+    display: inline-block;
+}
+.popup-app-logo img {
+    height: 37px;
+}
+.popup-app-header {
+    padding-left: 14px;
+    box-sizing: border-box;
+    flex-grow: 1;
+}
+.popup-app-header-title {
+    font-weight: 600;
+    padding-bottom: 2px;
+    font-size: 0.98em;
+}
+.popup-app-header-subtitle {
+    font-size: 0.8em;
+}
+.popup-help {
+    float:right;
+}
+.footer {
+    font-size: 0.9em;
+}
+
+/* Style für Erweiterungsoptionen */
+.options {
+    margin: 1% 2%;
+}
+.options-header-title {
+    font-weight: 600;
+    font-size: 1.9em;
+    margin-bottom: 0.7em;
+}
+.options-header-subtitle {
+    font-weight: 500;
+    font-size: 1.3em;
+}
+.options-option {
+    padding-top: 1em;
+}
+.options-block {
+    padding-top: 1em;
+}
+.options-block:nth-of-type(1) {
+    padding-top: 0em;
+}
+.options-headline {
+    padding-top: 1em;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+/* Globale Styles für dunkles Design */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: var(--dark-bg-color) !important;
+        color: var(--dark-font-color) !important;
+    }
+    a {
+        border-color: var(--dark-link-color);
+        color: var(--dark-link-color);
+    }
+}

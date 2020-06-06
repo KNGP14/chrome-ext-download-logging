@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "properties": {
+        "gpoLogPath": {
+            "title": "Protokollpfad",
+            "description": "Vollqualifizierter Pfad zum Speicherort der Log-Datei",
+            "type": "string"
+        },
+        "gpoDownloadPath": {
+            "title": "Downloadpfad",
+            "description": "Vollqualifizierter Pfad zum Download-Ordner",
+            "type": "string"
+        }
+    }
+}
