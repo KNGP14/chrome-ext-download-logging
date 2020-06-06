@@ -1,4 +1,4 @@
-# Chromium-Erweiterung: Download-Richtlinie und -Überwachung
+# Chromium-Erweiterung: Download-Richtlinie
 
 > :warning: **Hinweis**: Erweiterung befindet sich noch in der Entwicklung!
 
