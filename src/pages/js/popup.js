@@ -57,7 +57,7 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
         
                                 // Icon und Titel der 
                                 divPopupMessage.getElementsByClassName("popup-message-title-icon")[0].innerText = `\u26A0`;
-                                divPopupMessage.getElementsByClassName("popup-message-title")[0].innerText = `${error.title}`;
+                                divPopupMessage.getElementsByClassName("popup-message-title")[0].innerText = `${error.timestamp} ${error.title}`;
         
                                 error.msgLines.forEach(line => {
                                     if(divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText == "") {

@@ -17,9 +17,10 @@ var ErrorForPopup = class {
      * @param {string} title Titel der Fehlermeldung
      * @param {array} msgLines Zeilen der Fehlermeldung als Array aus Strings
      */
-    constructor(type, title, msgLines) {
+    constructor(type, timestamp, title, msgLines) {
         this.type = type;
         this.title = title;
+        this.timestamp = timestamp;
         this.msgLines = msgLines;
     }
 
@@ -31,7 +32,14 @@ var ErrorForPopup = class {
     }
 
     /**
-     * Gibt Titel der Fehlermeldung
+     * Gibt Zeitstempel als YYYY-MM-DD HH:mm:ss der Fehlermeldung zurück
+     */
+    getTimestamp() {
+        return this.timestamp;
+    }
+
+    /**
+     * Gibt Titel der Fehlermeldung zurück
      */
     getTitle() {
         return this.title;
@@ -92,7 +100,7 @@ function pushErrorForPopupToStorage(newError) {
  */
 function deleteAllErrorsForPopup() {
     chrome.storage.local.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
-        console.log("Alle Fehlermeldungen für Popup gelöscht");
+        log("Alle Fehlermeldungen für Popup gelöscht");
 
         // Badge nach Löschen aller Meldungen entfernen
         // https://github.com/KNGP14/chromium-download-policy/issues/1
@@ -103,7 +111,7 @@ function deleteAllErrorsForPopup() {
 /**
  * Zeitstempel zurückgeben
  */
-function getCurrentTimeStamp() {
+function getCurrentTimestamp() {
     let now = new Date();
 
     const yyyy = now.getFullYear();
@@ -122,15 +130,28 @@ function getCurrentTimeStamp() {
     return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${ss}`;
 }
 
+/**
+ * Funktion zum Protokollieren
+ * https://github.com/KNGP14/chromium-download-policy/issues/2
+ * @param {string} msg Zu protokollierender String oder Objekt
+ */
+function log(msg) {
+    if (typeof msg == "string") {
+        console.log(`${getCurrentTimestamp()} ${msg}`);
+    } else {
+        console.log(msg);
+    }
+}
+
 function debugPrintErrorStorage() {
     chrome.storage.local.get([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
-        console.log("debugPrintErrorStorage():");
-        console.log(storage[ErrorForPopup.STORAGEIDENTIFIER]);
+        log("debugPrintErrorStorage():");
+        log(storage[ErrorForPopup.STORAGEIDENTIFIER]);
     });
 }
 
 function debugClearStorage() {
-    chrome.storage.local.clear(() => { console.log("Kompletten Storage der Erweiterung gelöscht"); });
+    chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht"); });
 
 }
 
@@ -146,20 +167,21 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
             
             let errorForPopup = new ErrorForPopup(
                 ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
-                `${getCurrentTimeStamp()} [Fehler] Compliance-Verstoß`,
+                getCurrentTimestamp(),
+                `[Fehler] Compliance-Verstoß`,
                 [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
             );
-            console.log(`${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+            log(`${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
 
             // Download abbrechen
             chrome.downloads.cancel(currentDownloadId, function() {
                 errorForPopup.addMessage(`Download wurde abgebrochen!`);
                 pushErrorForPopupToStorage(errorForPopup);
-                console.log("Download wurde abgebrochen und Badge aktualisiert");
+                log("Download wurde abgebrochen und Badge aktualisiert");
             })
         } else {
             // Downloadpfad erlaubt
-            console.log(`Download entspricht Compliance-Vorgaben`);
+            log(`Download entspricht Compliance-Vorgaben`);
         }
     });
 }
@@ -170,9 +192,9 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
 chrome.runtime.onInstalled.addListener(function() {
 
     // Registry-Werte einlesen/testen
-    console.log("Policies werden eingelesen ...");
+    log("Policies werden eingelesen ...");
     chrome.storage.managed.get(function(value) {
-        console.log(value);
+        log(value);
     });
 
     /**
@@ -183,9 +205,8 @@ chrome.runtime.onInstalled.addListener(function() {
 
         // Protokollierung auf Konsole
         // TODO: Protokollierung in Dateisystem o.ä.
-        let now = new Date();
-        console.log(
-            `${now.toISOString()} (${item.id}) Download wurde gestartet ...\n` +
+        log(
+            `(${item.id}) Download wurde gestartet ...\n` +
             ` - id:        ${item.id} \n` +
             ` - mime:      ${item.mime} \n` +
             ` - filename:  ${item.filename} \n` +
@@ -204,15 +225,13 @@ chrome.runtime.onInstalled.addListener(function() {
      */
     chrome.downloads.onChanged.addListener(function(changed) {
 
-        let now = new Date();
-
         if (changed.filename) {
             // Dateiname für Download wurde festgelegt (insbesondere bei Nutzung des Kontextmenüs "Speichern unter")
 
             // Protokollierung auf Konsole
             // TODO: Protokollierung in Dateisystem o.ä.
-            console.log(
-                `${now.toISOString()} (${changed.id}) Dateiname wurde festgelegt ...\n` +
+            log(
+                `(${changed.id}) Dateiname wurde festgelegt ...\n` +
                 ` - filename:  ${changed.filename.current} \n`
             );
             
@@ -227,8 +246,8 @@ chrome.runtime.onInstalled.addListener(function() {
 
                 // Protokollierung auf Konsole
                 // TODO: Protokollierung in Dateisystem o.ä.
-                console.log(
-                    `${now.toISOString()} (${changed.id}) Download wurde abgebrochen ...\n` +
+                log(
+                    `(${changed.id}) Download wurde abgebrochen ...\n` +
                     ` - error:     ${changed.error.current} \n`
                 );
 
@@ -236,8 +255,8 @@ chrome.runtime.onInstalled.addListener(function() {
         
                 // Protokollierung auf Konsole
                 // TODO: Protokollierung in Dateisystem o.ä.
-                console.log(
-                    `${now.toISOString()} (${changed.id}) Download wurde abgeschlossen ...\n` +
+                log(
+                    `(${changed.id}) Download wurde abgeschlossen ...\n` +
                     ` - endTime:   ${new Date(changed.endTime.current).toISOString()} \n`
                 );
             }
