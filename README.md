@@ -16,6 +16,7 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
 
 ### Derzeitiger Stand
  - Blockierung aller Downloads, die nicht nach `gpoDownloadPath` gespeichert werden
+ - Darstellung von Meldungen in Popup inkl. Badge
  - Protokollierung aller Downloads erfolgt derzeit auf Konsole > Dateisystemzugriffe o.ä. [Issue #2](/../../issues/2)
 
 ### Screenshots
