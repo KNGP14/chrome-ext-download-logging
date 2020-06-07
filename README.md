@@ -15,8 +15,7 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
  - `gpoLogPath (REG_SZ)`
 
 ### Derzeitiger Stand
- - Downloads werden abgebrochen, sofern nicht Pfad aus `gpoDownloadPath` gewählt wurde
- - derzeit erfolgt nur eine Konsolenausgabe > Popup: [Issue #1](/../../issues/1)
+ - Blockierung aller Downloads, die nicht nach `gpoDownloadPath` gespeichert werden
  - Protokollierung aller Downloads erfolgt derzeit auf Konsole > Dateisystemzugriffe o.ä. [Issue #2](/../../issues/2)
 
 ### Screenshots
