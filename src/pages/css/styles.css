@@ -87,12 +87,12 @@ div.popup {
     box-sizing: border-box;
     flex-grow: 1;
 }
-.popup-app-header-title {
+#popup-app-header-title {
     font-weight: 600;
     padding-bottom: 2px;
     font-size: 0.98em;
 }
-.popup-app-header-subtitle {
+#popup-app-header-subtitle {
     font-size: 0.8em;
 }
 .popup-help {

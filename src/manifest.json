@@ -1,5 +1,5 @@
 {
-    "name": "Download-Richtlinie und -Überwachung",
+    "name": "Download-Richtlinie",
     "version": "0.2",
     "description": "Protokollierung aller Downloads und Steuerung des Speicherorts",
     "author": "Kevin Neumann",

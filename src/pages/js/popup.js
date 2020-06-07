@@ -9,6 +9,10 @@ aOptionsPage.addEventListener("click", () => {
 let divAppVer = document.getElementById('popup-app-version');
 divAppVer.innerText = `Version: ${chrome.runtime.getManifest().version}`;
 
+// App-Name aus Manifest einlesen
+let divAppTitle = document.getElementById('popup-app-header-title');
+divAppTitle.innerText = `${chrome.runtime.getManifest().name}`;
+
 // Download- und Protokoll-Pfad aus Registry auslesen
 let downloadPath = document.getElementById('downloadPath');
 chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
@@ -29,7 +33,7 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
         let bg = chrome.extension.getBackgroundPage();
 
         // Auslesen aller Fehlermeldungen für Popup
-        chrome.storage.sync.get([bg.ErrorForPopup.STORAGEIDENTIFIER], (currentStorage) => {
+        chrome.storage.local.get([bg.ErrorForPopup.STORAGEIDENTIFIER], (currentStorage) => {
             let currentErrorList = currentStorage[bg.ErrorForPopup.STORAGEIDENTIFIER];
 
             if (currentErrorList == undefined) {

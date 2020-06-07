@@ -60,7 +60,7 @@ var ErrorForPopup = class {
 function pushErrorForPopupToStorage(newError) {
 
     // Zuerst aktuell gespeicherte Fehler abrufen
-    chrome.storage.sync.get([ErrorForPopup.STORAGEIDENTIFIER], function(currentStorage) {
+    chrome.storage.local.get([ErrorForPopup.STORAGEIDENTIFIER], function(currentStorage) {
 
         let currentErrorList = currentStorage[ErrorForPopup.STORAGEIDENTIFIER];
 
@@ -75,7 +75,7 @@ function pushErrorForPopupToStorage(newError) {
         // Ojekt zum Speichern in Storage zusammenstellen und speichern
         let updatedErrorStorageObject = new Object;
         updatedErrorStorageObject[ErrorForPopup.STORAGEIDENTIFIER] = currentErrorList;
-        chrome.storage.sync.set(updatedErrorStorageObject, () => {   
+        chrome.storage.local.set(updatedErrorStorageObject, () => {   
 
             // Speichern erfolgreich -> Badge als Hinweis für Nutzer an Icon platzieren
             // https://github.com/KNGP14/chromium-download-policy/issues/1
@@ -91,7 +91,7 @@ function pushErrorForPopupToStorage(newError) {
  * Funktion zum Löschen aller Fehlermeldungen via Storage-API und Badge entfernen
  */
 function deleteAllErrorsForPopup() {
-    chrome.storage.sync.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
+    chrome.storage.local.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
         console.log("Alle Fehlermeldungen für Popup gelöscht");
 
         // Badge nach Löschen aller Meldungen entfernen
@@ -123,14 +123,14 @@ function getCurrentTimeStamp() {
 }
 
 function debugPrintErrorStorage() {
-    chrome.storage.sync.get([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
+    chrome.storage.local.get([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
         console.log("debugPrintErrorStorage():");
         console.log(storage[ErrorForPopup.STORAGEIDENTIFIER]);
     });
 }
 
 function debugClearStorage() {
-    chrome.storage.sync.clear(() => { console.log("Kompletten Storage der Erweiterung gelöscht"); });
+    chrome.storage.local.clear(() => { console.log("Kompletten Storage der Erweiterung gelöscht"); });
 
 }
 
