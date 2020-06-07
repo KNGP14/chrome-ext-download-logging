@@ -21,7 +21,7 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
 
 ### Screenshots
 Nach Installation ohne Meldungen:<br>
-<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="300">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="300">
 
 Erweiterungsoptionen:<br>
 <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" height="300">
