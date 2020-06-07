@@ -22,4 +22,15 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
 ![alt text](https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png?raw=true)
 ![alt text](https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png?raw=true)
 
-<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png" width="48">
+### Screenshots
+Nach Installation ohne Meldungen:<br>
+<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="150">
+
+Download über Kontextmenü starten:<br>
+<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png" height="150">
+
+Abgebrochener Download mit Benachrichtigungspunkt:<br>
+<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png" height="150">
+
+Angezeigte Fehlermeldung:<br>
+<img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message" height="150">
