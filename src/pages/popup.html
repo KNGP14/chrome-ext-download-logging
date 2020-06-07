@@ -17,13 +17,33 @@
             </div>            
         </div>
         <div class="popup-panel">
+            <div class="popup-header-title">Richtlinien</div>
+            <div class="popup-description">Zum Zwecke der zentralen Steuerung und Überwachung sind Downloads in einem fest definierten Verzeichnis abzulegen.</div>
+            <label for="downloadPath" class="popup-description">Downloadverzeichnis:</label><br>
+            <input type="text" id="downloadPath" class="popup-downloadpath" disabled="true">
+        </div>
+        <div class="popup-panel">
             <div class="popup-header-title">Meldungen</div>
-            <div id="popup-messages"></div>
+            <div id="popup-messages" class="popup-description"></div>
         </div>
         <div class="popup-panel flex-horizontal">
             <div class="link-container"><div id="popup-link-options" class="link footer">Erweiterungsoptionen</div></div>
             <div id="popup-app-version" class="footer"></div>
         </div>
+    </div>
+
+    <div id="templates" class="hidden">
+        <div class="popup-message">
+            <div class="popup-message-title-container">
+                <div class="popup-message-title-icon"></div>
+                <div class="popup-message-title"></div>
+            </div>
+            <div class="popup-message-text-container">
+                <div class="popup-message-text-indent"></div>
+                <div class="popup-message-text"></div>
+            </div>
+        </div>
+        <div class="test"></div>
     </div>
 
     <script src="js/popup.js"></script>

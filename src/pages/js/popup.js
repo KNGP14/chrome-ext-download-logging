@@ -9,11 +9,20 @@ aOptionsPage.addEventListener("click", () => {
 let divAppVer = document.getElementById('popup-app-version');
 divAppVer.innerText = `Version: ${chrome.runtime.getManifest().version}`;
 
+// Download- und Protokoll-Pfad aus Registry auslesen
+let downloadPath = document.getElementById('downloadPath');
+chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
+    downloadPath.value = value.gpoDownloadPath;
+});
+
 // Meldungen anzeigen und Badge löschen
 let divMessages = document.getElementById('popup-messages');
 chrome.browserAction.getBadgeText({}, (badgeText) => {
+
     if (badgeText == "") {
+
         divMessages.innerText = `Derzeit liegen keine aktuellen Meldungen vor. ${badgeText}`;
+
     } else {
 
         // Kontext der backgound.js importieren
@@ -24,54 +33,46 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
             let currentErrorList = currentStorage[bg.ErrorForPopup.STORAGEIDENTIFIER];
 
             if (currentErrorList == undefined) {
+
                 // Keine Fehler ausgelesen trotz Badge --> Fehler
                 divMessages.innerText = `Fehler beim Abrufen der aktuellen Meldungen!`;
+
             } else {
-                // Fehler ausgelesen
-                currentErrorList.forEach(error => {
-                    if(error != null) {
-                        let divMsgContainer = document.createElement('div');
-                        divMsgContainer.setAttribute('class', 'popup-message');
 
-                        let divMsgTitleContainer = document.createElement('div');
-                        divMsgTitleContainer.setAttribute('class', 'popup-message-title-container');
+                // Templates aus popup.html importieren
+                let htmlTemplates = document.getElementById("templates").children;
+                for (let htmlTemplate of htmlTemplates) {
+                    if(htmlTemplate.className.startsWith("popup-message")) {
 
-                        let divMsgTitleIcon = document.createElement('div');
-                        divMsgTitleIcon.innerText = `\u26A0`
-                        divMsgTitleIcon.setAttribute('class', 'popup-message-title-icon');
-                        divMsgTitleContainer.appendChild(divMsgTitleIcon);
-
-                        let divMsgTitle = document.createElement('div');
-                        divMsgTitle.innerText = `${error.title}`
-                        divMsgTitle.setAttribute('class', 'popup-message-title');
-                        divMsgTitleContainer.appendChild(divMsgTitle);
-                        
-                        divMsgContainer.appendChild(divMsgTitleContainer);
-
-                        let divMsgTextContainer = document.createElement('div');
-                        divMsgTextContainer.setAttribute('class', 'popup-message-text-container');
-
-                        let divMsgTextIndent = document.createElement('div');
-                        divMsgTextIndent.innerText = ``
-                        divMsgTextIndent.setAttribute('class', 'popup-message-text-indent');
-                        divMsgTextContainer.appendChild(divMsgTextIndent);
-                
-                        let divMsgText = document.createElement('div');
-                        error.msgLines.forEach(line => {
-                            if(divMsgText.innerText == "") {
-                                divMsgText.innerText = `${line}`
-                            } else {
-                                divMsgText.innerText += `\n${line}`
+                        // Fehler ausgelesen
+                        currentErrorList.forEach(error => {
+                            if(error != null) {
+        
+                                // Template für Popup-Message clonen
+                                let divPopupMessage = htmlTemplate.cloneNode(true);
+        
+                                // Icon und Titel der 
+                                divPopupMessage.getElementsByClassName("popup-message-title-icon")[0].innerText = `\u26A0`;
+                                divPopupMessage.getElementsByClassName("popup-message-title")[0].innerText = `${error.title}`;
+        
+                                error.msgLines.forEach(line => {
+                                    if(divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText == "") {
+                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText = `${line}`
+                                    } else {
+                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText += `\n${line}`
+                                    }
+                                });
+        
+                                // Fehlermeldung in DOM einfügen
+                                divMessages.appendChild(divPopupMessage);
+        
                             }
-                            divMsgText.setAttribute('class', 'popup-message-text');
-                            divMsgTextContainer.appendChild(divMsgText);
                         });
 
-                        divMsgContainer.appendChild(divMsgTextContainer);
-
-                        divMessages.appendChild(divMsgContainer);
+                        break;
                     }
-                });
+                }
+
             }
 
             // Fehlermeldungen löschen und Badge entfernen

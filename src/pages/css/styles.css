@@ -31,6 +31,10 @@ ul {
 li {
     margin-bottom: 0.1em;
 }
+input[type=text],
+input[type=password] {
+    box-sizing : border-box;
+}
 a, .link {
     border-bottom: 1px solid var(--light-link-color);
     text-decoration: none;
@@ -53,7 +57,7 @@ a, .link {
 .footer {
     font-size: 0.9em;
 }
-.templates {
+.hidden {
     display: none;
 }
 
@@ -97,7 +101,6 @@ div.popup {
 .popup-message {
     display: table;
     width: 450px;
-    border-spacing: 0.3em;
 }
 .popup-message-title-container, .popup-message-text-container {
     display: table-row;
@@ -106,16 +109,27 @@ div.popup {
     display: table-cell;
 }
 .popup-message-title-icon {
-    padding-right: 0.2em;
+    padding-left: 0.2em;
+    padding-right: 0.5em;
 }
 .popup-message-title {
     font-weight: 600;
+    font-size: 0.9em;
+    padding-bottom: 0.3em;
 }
 .popup-message-text {
     font-weight: normal;
-}
-#popup-messages {
     font-size: 0.9em;
+    padding-bottom: 0.4em;
+}
+.popup-description {
+    font-size: 0.9em;
+    margin-bottom: 0.3em;
+}
+.popup-downloadpath {
+    font-size: 0.9em;
+    margin-top: 0.4em;
+    width: 100%;
 }
 
 /* Style für Erweiterungsoptionen */
