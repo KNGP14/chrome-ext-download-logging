@@ -1,11 +1,134 @@
 /**
- * Cache für Datenaustausch mit popup.js
+ * Klasse zur Behandlung von Fehlermeldungen für popup.html
  */
-var sharedData = {
-    lastError: {
-        title: "",
-        msg: ""
+class ErrorForPopup {
+
+    // Fehlertypen
+    static TYPES = {
+        BLOCKEDDOWNLOAD: 1
     }
+
+    // Konstante für Identifier der Fehlermeldungen in localStorage
+    static STORAGEIDENTIFIER = "ErrorsForPopup";
+
+    /**
+     * Neuen Fehler für Popup anlegen
+     * @param {int} type Wert aus ErrorForPopup.TYPES
+     * @param {string} title Titel der Fehlermeldung
+     * @param {array} msgLines Zeilen der Fehlermeldung als Array aus Strings
+     */
+    constructor(type, title, msgLines) {
+        this.type = type;
+        this.title = title;
+        this.msgLines = msgLines;
+    }
+
+    /**
+     * Gibt Typ der Fehlermeldung zurück
+     */
+    getType() {
+        return this.type;
+    }
+
+    /**
+     * Gibt Titel der Fehlermeldung
+     */
+    getTitle() {
+        return this.title;
+    }
+
+    /**
+     * Gibt Array mit Zeilen der Fehlermeldungen zurück
+     */
+    getMessages() {
+        return this.msgLines;
+    }
+
+    /**
+     * Neue Zeile zu Fehlermeldung hinzufügen
+     * @param {string} msgLine Weitere Information zum Fehler
+     */
+    addMessage(msgLine) {
+        this.msgLines.push(msgLine);
+    }
+}
+
+/**
+ * Speichern eines neuen Fehlers in Storage
+ * @param {ErrorForPopup} newError Fehler vom Typ ErrorForPopup
+ */
+function pushErrorForPopupToStorage(newError) {
+
+    // Zuerst aktuell gespeicherte Fehler abrufen
+    chrome.storage.sync.get([ErrorForPopup.STORAGEIDENTIFIER], function(currentStorage) {
+
+        let currentErrorList = currentStorage[ErrorForPopup.STORAGEIDENTIFIER];
+
+        if (currentErrorList == undefined) {
+            // Keine Fehler vorhanden --> neu anlegen
+            currentErrorList = [newError]
+        } else {
+            // Bereits Fehler vorhanden --> hinzufügen
+            currentErrorList.push(newError);
+        }
+
+        // Ojekt zum Speichern in Storage zusammenstellen und speichern
+        let updatedErrorStorageObject = new Object;
+        updatedErrorStorageObject[ErrorForPopup.STORAGEIDENTIFIER] = currentErrorList;
+        chrome.storage.sync.set(updatedErrorStorageObject, () => {   
+
+            // Speichern erfolgreich -> Badge als Hinweis für Nutzer an Icon platzieren
+            // https://github.com/KNGP14/chromium-download-policy/issues/1
+            chrome.browserAction.setBadgeText({text: "!"});
+            chrome.browserAction.setBadgeBackgroundColor({ color: [171, 42, 7, 255] });
+
+        });
+
+    });
+}
+
+function deleteAllErrorsForPopupFromStorage() {
+    chrome.storage.sync.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
+        console.log("Alle Fehlermeldungen für Popup gelöscht");
+    });
+}
+
+function debugPrintErrorStorage() {
+    chrome.storage.sync.get([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
+        console.log("debugPrintErrorStorage():");
+        console.log(storage[ErrorForPopup.STORAGEIDENTIFIER]);
+    });
+}
+
+function debugClearStorage() {
+    chrome.storage.sync.clear(() => { console.log("Kompletten Storage der Erweiterung gelöscht"); });
+
+}
+
+/**
+ * Anderen Zielpfad für Download als in Registry hinterlegt verbieten
+ * @param {int} currentDownloadId ID des Downloads
+ * @param {string} currentDownloadPath Speicherort/Pfad des Downloads
+ */
+function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) {
+    chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
+        let gpoDownloadPath = value.gpoDownloadPath;
+        if (currentDownloadPath != "" && !currentDownloadPath.startsWith(gpoDownloadPath)) {
+            // Downloadpfad nicht erlaubt
+            let errorForPopup = new ErrorForPopup(ErrorForPopup.TYPES.BLOCKEDDOWNLOAD, `Compliance-Verstoß`, [`Download erfolgte nicht nach: "${gpoDownloadPath}"`]);
+            console.log(`${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+
+            // Download abbrechen
+            chrome.downloads.cancel(currentDownloadId, function() {
+                errorForPopup.addMessage(`Download wurde abgebrochen!`);
+                pushErrorForPopupToStorage(errorForPopup);
+                console.log("Download wurde abgebrochen und Badge aktualisiert");
+            })
+        } else {
+            // Downloadpfad nicht erlaubt
+            console.log(`blockForbiddenDownloadLocation: Erlaubter Download`);
+        }
+    });
 }
 
 /**
@@ -13,20 +136,11 @@ var sharedData = {
  */
 chrome.runtime.onInstalled.addListener(function() {
 
-
-
     // Registry-Werte einlesen/testen
     console.log("Policies werden eingelesen ...");
     chrome.storage.managed.get(function(value) {
         console.log(value);
     });
-
-    // https://github.com/KNGP14/chromium-download-policy/issues/1
-    // Hilfsfunktion: Badge als Hinweis für Nutzer an Icon platzieren
-    function addErrorBadge() {
-        chrome.browserAction.setBadgeText({text: "!"});
-        chrome.browserAction.setBadgeBackgroundColor({ color: [171, 42, 7, 255] });
-    }
 
     /**
      * Erkennung eines Dateidownloads
@@ -46,23 +160,8 @@ chrome.runtime.onInstalled.addListener(function() {
             ` - finalUrl:  ${item.finalUrl} \n`
         );
 
-        // Anderen Zielpfad für Download als in Registry hinterlegt verbieten
-        // TODO: Popup.html für Information an Nutzer
-        chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-            downloadPath = value.gpoDownloadPath;
-            if (item.filename != "" && !item.filename.startsWith(downloadPath)) {
-                sharedData.lastError.title = `Compliance-Verstoß`;
-                sharedData.lastError.msg = `Download erfolgte nicht nach: "${downloadPath}"`;
-                console.log(`${sharedData.lastError.title}: ${sharedData.lastError.msg} Download wird abgebrochen ...`);
-
-                // Download abbrechen
-                chrome.downloads.cancel(item.id, function() {
-                    sharedData.lastError.msg += `\n Download wurde abgebrochen!`
-                    addErrorBadge();
-                    console.log("Download wurde abgebrochen und Badge aktualisiert");
-                })
-            }
-        });
+        // Speicherort für Download prüfen und ggf. blockieren
+        blockForbiddenDownloadLocation(item.id, item.filename);
         
     });
 
@@ -84,22 +183,8 @@ chrome.runtime.onInstalled.addListener(function() {
                 ` - filename:  ${changed.filename.current} \n`
             );
             
-            // Download erfolgt über Kontextmenü
-            chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-                downloadPath = value.gpoDownloadPath;
-                if (!changed.filename.current.startsWith(downloadPath)) {
-                    sharedData.lastError.title = `Compliance-Verstoß`;
-                    sharedData.lastError.msg = `Download erfolgte nicht nach: "${downloadPath}"`;
-                    console.log(`${sharedData.lastError.title}: ${sharedData.lastError.msg} Download wird abgebrochen ...`);
-
-                    // Download abbrechen
-                    chrome.downloads.cancel(item.id, function() {
-                        sharedData.lastError.msg += `\n Download wurde abgebrochen!`
-                        addErrorBadge();
-                        console.log("Download wurde abgebrochen und Badge aktualisiert");
-                    })
-                }
-            });
+            // Speicherort für Download prüfen und ggf. blockieren
+            blockForbiddenDownloadLocation(changed.id, changed.filename.current);
             
         } else if (changed.state) {
 
@@ -126,7 +211,4 @@ chrome.runtime.onInstalled.addListener(function() {
         }
     });
 
-
-
 });
-

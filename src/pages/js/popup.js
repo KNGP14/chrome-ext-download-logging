@@ -16,19 +16,29 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
         divMessages.innerText = `Derzeit liegen keine aktuellen Meldungen vor. ${badgeText}`;
     } else {
         let bg = chrome.extension.getBackgroundPage();
+        let errors = localStorage[bg.Error.LOCALSTORAGEIDENTIFIER]
+        if (errors != undefined) {
 
-        var msgTitle = document.createElement('div');
-        msgTitle.innerText = `\u26A0 ${bg.sharedData.lastError.title}`
-        msgTitle.setAttribute('class', 'popup-message-title');
-        divMessages.appendChild(msgTitle);
-
-        var msgText = document.createElement('div');
-        msgText.innerText = `${bg.sharedData.lastError.msg}`
-        msgText.setAttribute('class', 'popup-message-text');
-        divMessages.appendChild(msgText);
-
-        chrome.browserAction.setBadgeText({text: ""});
-        bg.sharedData.lastError.title = "";
-        bg.sharedData.lastError.msg = "";
+            errors.forEach(error => {
+                var divMsgTitle = document.createElement('div');
+                divMsgTitle.innerText = `\u26A0 ${error.getTitle()}`
+                divMsgTitle.setAttribute('class', 'popup-message-title');
+                divMessages.appendChild(divMsgTitle);
+        
+                var divMsgText = document.createElement('div');
+                error.getMessages.forEach(line => {
+                    if(divMsgText.innerText == "") {
+                        divMsgText.innerText = `${line}`
+                    } else {
+                        divMsgText.innerText += `\n${line}`
+                    }
+                    divMsgText.setAttribute('class', 'popup-message-text');
+                    divMessages.appendChild(divMsgText);
+                });
+            });
+        
+            chrome.browserAction.setBadgeText({text: ""});
+            localStorage["Errors"] = [];
+        }
     }
 });
