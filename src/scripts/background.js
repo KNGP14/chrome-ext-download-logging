@@ -1,7 +1,7 @@
 /**
  * Klasse zur Behandlung von Fehlermeldungen für popup.html
  */
-class ErrorForPopup {
+var ErrorForPopup = class {
 
     // Fehlertypen
     static TYPES = {
@@ -54,7 +54,7 @@ class ErrorForPopup {
 }
 
 /**
- * Speichern eines neuen Fehlers in Storage
+ * Speichern eines neuen Fehlers via Storage-API
  * @param {ErrorForPopup} newError Fehler vom Typ ErrorForPopup
  */
 function pushErrorForPopupToStorage(newError) {
@@ -87,10 +87,39 @@ function pushErrorForPopupToStorage(newError) {
     });
 }
 
-function deleteAllErrorsForPopupFromStorage() {
+/**
+ * Funktion zum Löschen aller Fehlermeldungen via Storage-API und Badge entfernen
+ */
+function deleteAllErrorsForPopup() {
     chrome.storage.sync.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
         console.log("Alle Fehlermeldungen für Popup gelöscht");
+
+        // Badge nach Löschen aller Meldungen entfernen
+        // https://github.com/KNGP14/chromium-download-policy/issues/1
+        chrome.browserAction.setBadgeText({text: ""});
     });
+}
+
+/**
+ * Zeitstempel zurückgeben
+ */
+function getCurrentTimeStamp() {
+    let now = new Date();
+
+    const yyyy = now.getFullYear();
+    let mm = now.getMonth()+1; 
+    let dd = now.getDate();
+    let HH = now.getHours();
+    let MM = now.getMinutes();
+    let ss = now.getSeconds();
+
+    if(dd < 10) { dd = `0${dd}`; }
+    if(mm < 10) { mm = `0${mm}`; }
+    if(HH < 10) { HH = `0${HH}`; }
+    if(MM < 10) { MM = `0${MM}`; }
+    if(ss < 10) { ss = `0${ss}`; }
+
+    return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${ss}`;
 }
 
 function debugPrintErrorStorage() {
@@ -112,10 +141,14 @@ function debugClearStorage() {
  */
 function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) {
     chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-        let gpoDownloadPath = value.gpoDownloadPath;
-        if (currentDownloadPath != "" && !currentDownloadPath.startsWith(gpoDownloadPath)) {
+        if (currentDownloadPath != "" && !currentDownloadPath.startsWith(value.gpoDownloadPath)) {
             // Downloadpfad nicht erlaubt
-            let errorForPopup = new ErrorForPopup(ErrorForPopup.TYPES.BLOCKEDDOWNLOAD, `Compliance-Verstoß`, [`Download erfolgte nicht nach: "${gpoDownloadPath}"`]);
+            
+            let errorForPopup = new ErrorForPopup(
+                ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
+                `${getCurrentTimeStamp()} [Fehler] Compliance-Verstoß`,
+                [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
+            );
             console.log(`${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
 
             // Download abbrechen
@@ -125,8 +158,8 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
                 console.log("Download wurde abgebrochen und Badge aktualisiert");
             })
         } else {
-            // Downloadpfad nicht erlaubt
-            console.log(`blockForbiddenDownloadLocation: Erlaubter Download`);
+            // Downloadpfad erlaubt
+            console.log(`Download entspricht Compliance-Vorgaben`);
         }
     });
 }

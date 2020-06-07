@@ -59,7 +59,7 @@ a, .link {
 
 /* Style für Popup */
 div.popup {
-    width: 300px;
+    min-width: 300px;
 }
 .popup-header-title {
     font-size: 1.3em;
@@ -94,9 +94,22 @@ div.popup {
 .popup-help {
     float:right;
 }
+.popup-message {
+    display: table;
+    width: 450px;
+    border-spacing: 0.3em;
+}
+.popup-message-title-container, .popup-message-text-container {
+    display: table-row;
+}
+.popup-message-title-icon, .popup-message-title, .popup-message-text-indent, .popup-message-text {
+    display: table-cell;
+}
+.popup-message-title-icon {
+    padding-right: 0.2em;
+}
 .popup-message-title {
     font-weight: 600;
-    margin-bottom: 0.2em;
 }
 .popup-message-text {
     font-weight: normal;

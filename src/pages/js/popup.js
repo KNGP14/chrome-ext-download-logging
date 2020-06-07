@@ -15,30 +15,67 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
     if (badgeText == "") {
         divMessages.innerText = `Derzeit liegen keine aktuellen Meldungen vor. ${badgeText}`;
     } else {
-        let bg = chrome.extension.getBackgroundPage();
-        let errors = localStorage[bg.Error.LOCALSTORAGEIDENTIFIER]
-        if (errors != undefined) {
 
-            errors.forEach(error => {
-                var divMsgTitle = document.createElement('div');
-                divMsgTitle.innerText = `\u26A0 ${error.getTitle()}`
-                divMsgTitle.setAttribute('class', 'popup-message-title');
-                divMessages.appendChild(divMsgTitle);
-        
-                var divMsgText = document.createElement('div');
-                error.getMessages.forEach(line => {
-                    if(divMsgText.innerText == "") {
-                        divMsgText.innerText = `${line}`
-                    } else {
-                        divMsgText.innerText += `\n${line}`
+        // Kontext der backgound.js importieren
+        let bg = chrome.extension.getBackgroundPage();
+
+        // Auslesen aller Fehlermeldungen für Popup
+        chrome.storage.sync.get([bg.ErrorForPopup.STORAGEIDENTIFIER], (currentStorage) => {
+            let currentErrorList = currentStorage[bg.ErrorForPopup.STORAGEIDENTIFIER];
+
+            if (currentErrorList == undefined) {
+                // Keine Fehler ausgelesen trotz Badge --> Fehler
+                divMessages.innerText = `Fehler beim Abrufen der aktuellen Meldungen!`;
+            } else {
+                // Fehler ausgelesen
+                currentErrorList.forEach(error => {
+                    if(error != null) {
+                        let divMsgContainer = document.createElement('div');
+                        divMsgContainer.setAttribute('class', 'popup-message');
+
+                        let divMsgTitleContainer = document.createElement('div');
+                        divMsgTitleContainer.setAttribute('class', 'popup-message-title-container');
+
+                        let divMsgTitleIcon = document.createElement('div');
+                        divMsgTitleIcon.innerText = `\u26A0`
+                        divMsgTitleIcon.setAttribute('class', 'popup-message-title-icon');
+                        divMsgTitleContainer.appendChild(divMsgTitleIcon);
+
+                        let divMsgTitle = document.createElement('div');
+                        divMsgTitle.innerText = `${error.title}`
+                        divMsgTitle.setAttribute('class', 'popup-message-title');
+                        divMsgTitleContainer.appendChild(divMsgTitle);
+                        
+                        divMsgContainer.appendChild(divMsgTitleContainer);
+
+                        let divMsgTextContainer = document.createElement('div');
+                        divMsgTextContainer.setAttribute('class', 'popup-message-text-container');
+
+                        let divMsgTextIndent = document.createElement('div');
+                        divMsgTextIndent.innerText = ``
+                        divMsgTextIndent.setAttribute('class', 'popup-message-text-indent');
+                        divMsgTextContainer.appendChild(divMsgTextIndent);
+                
+                        let divMsgText = document.createElement('div');
+                        error.msgLines.forEach(line => {
+                            if(divMsgText.innerText == "") {
+                                divMsgText.innerText = `${line}`
+                            } else {
+                                divMsgText.innerText += `\n${line}`
+                            }
+                            divMsgText.setAttribute('class', 'popup-message-text');
+                            divMsgTextContainer.appendChild(divMsgText);
+                        });
+
+                        divMsgContainer.appendChild(divMsgTextContainer);
+
+                        divMessages.appendChild(divMsgContainer);
                     }
-                    divMsgText.setAttribute('class', 'popup-message-text');
-                    divMessages.appendChild(divMsgText);
                 });
-            });
-        
-            chrome.browserAction.setBadgeText({text: ""});
-            localStorage["Errors"] = [];
-        }
+            }
+
+            // Fehlermeldungen löschen und Badge entfernen
+            bg.deleteAllErrorsForPopup();
+        });
     }
 });
