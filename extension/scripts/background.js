@@ -130,6 +130,7 @@ function getCurrentTimestamp() {
     return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${ss}`;
 }
 
+var port = null;
 /**
  * Funktion zum Protokollieren
  * https://github.com/KNGP14/chromium-download-policy/issues/2
@@ -141,6 +142,26 @@ function log(msg) {
     } else {
         console.log(msg);
     }
+
+    // Verbindung mit Host aufbauen
+    port = chrome.runtime.connectNative("com.github.kngp14.chromium.download.policy");
+
+    // Listener für Rückmeldungen
+    port.onMessage.addListener((message) => {
+      console.log(`${getCurrentTimestamp()} Rückmeldung von Hostanwendung: \n ${JSON.stringify(message)}`);
+    });
+
+    // Verbindung schließen
+    port.onDisconnect.addListener(() => {
+      console.log(`${getCurrentTimestamp()} Verbindung zu Host getrennt (${chrome.runtime.lastError.message})`);
+      port = null;
+    });
+
+    // Log-Eintrag
+    message = {"text": `${getCurrentTimestamp()} ${msg}`};
+    
+    // Log-Eintrag an Host zum Schreiben in Datei übergeben
+    port.postMessage(message);
 }
 
 function debugPrintErrorStorage() {

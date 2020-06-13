@@ -1,4 +1,5 @@
 {
+    // Extension ID: ioojeemhfgacfehcknfmmbahjckepcfe
     "name": "Download-Richtlinie",
     "version": "0.2",
     "description": "Protokollierung aller Downloads und Steuerung des Speicherorts",
@@ -11,7 +12,11 @@
     },
 
     "offline_enabled": true,
-    "permissions": ["downloads", "storage"],
+    "permissions": [
+        "downloads", 
+        "storage", 
+        "nativeMessaging"
+    ],
 
     "background": {
         "scripts": ["scripts/background.js"],
