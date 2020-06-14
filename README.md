@@ -21,16 +21,16 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
 
 ### Screenshots
 Nach Installation ohne Meldungen:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="350">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" style="max-height: 350px;">
 
 Erweiterungsoptionen:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" height="350">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" style="max-height: 350px;">
 
 Download über Kontextmenü starten:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png" height="350">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png" style="max-height: 350px;">
 
 Abgebrochener Download mit Benachrichtigungspunkt:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png" height="350">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png" style="max-height: 350px;">
 
 Angezeigte Fehlermeldung:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png" height="350">
+ - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png" style="max-height: 350px;">
