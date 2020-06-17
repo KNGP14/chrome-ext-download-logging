@@ -256,6 +256,35 @@ function debugPrintErrorStorage() {
     });
 }
 
+
+/**
+ * Funktion zum Aufruf des Download-Scanskripts über Hostanwendung
+ * @param {integer} currentDownloadId ID des abgeschlossenen und zu scannenden Downloads
+ */
+function callDownloadScan(currentDownloadId) {
+    // DownloadItem anhand ID ermitteln
+    let searchQuery = {
+        id: currentDownloadId,
+        exists: true
+    };
+    chrome.downloads.search(searchQuery, (results)=>{
+        for (let index = 0; index < results.length; index++) {
+            const downloadedItem = results[index];
+
+            // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
+            log(`(${downloadedItem.id}) Scan des Downloads wurde gestartet`);
+
+            // Aus Downloadhistorie entfernen
+            chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
+                for (let idIndex = 0; idIndex < erasedIds.length; idIndex++) {
+                    log(`(${erasedIds[idIndex]}) Download aus Historie entfernt`)
+                }
+            });
+        }
+
+    });
+}
+
 function debugClearStorage() {
     chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht"); });
 
@@ -361,6 +390,7 @@ chrome.runtime.onInstalled.addListener(function() {
         
                 // Protokollierung auf Konsole
                 // TODO: Protokollierung in Dateisystem o.ä.
+                callDownloadScan(changed.id);
                 log(
                     `(${changed.id}) Download wurde abgeschlossen ...\n` +
                     ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
