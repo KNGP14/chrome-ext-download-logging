@@ -1,6 +1,5 @@
-/**
- * Klasse zur Behandlung von Fehlermeldungen für popup.html
- */
+
+// Klasse zur Behandlung von Fehlermeldungen für popup.html
 var ErrorForPopup = class {
 
     // Fehlertypen
@@ -58,6 +57,64 @@ var ErrorForPopup = class {
      */
     addMessage(msgLine) {
         this.msgLines.push(msgLine);
+    }
+}
+// Klasse für Warteschlange mit auszuführenden Promises
+var Queue = class {
+
+    /**
+     * Copyright: ogostos
+     * https://medium.com/@karenmarkosyan/how-to-manage-promises-into-dynamic-queue-with-vanilla-javascript-9d0d1f8d4df5
+     */
+
+    static queue = [];
+    static pendingPromise = false;
+
+    /**
+     * Promise zur Ausführung in Warteschlange aufnehmen
+     * @param {Promise} promise Promise, der in Warteschlage aufgenommen werden soll
+     */
+    static enqueue(promise) {
+        return new Promise((resolve, reject) => {
+            this.queue.push({
+                promise,
+                resolve,
+                reject,
+            });
+            this.dequeue();
+        });
+    }
+
+    /**
+     * Abarbeitung aller Promises in Warteschlange
+     */
+    static dequeue() {
+        if (this.workingOnPromise) {
+            return false;
+        }
+        const item = this.queue.shift();
+        if (!item) {
+            return false;
+        }
+        try {
+            this.workingOnPromise = true;
+            item.promise()
+                .then((value) => {
+                    this.workingOnPromise = false;
+                    item.resolve(value);
+                    this.dequeue();
+                })
+                .catch(err => {
+                    this.workingOnPromise = false;
+                    item.reject(err);
+                    this.dequeue();
+                })
+        } catch (err) {
+            this.workingOnPromise = false;
+            item.reject(err);
+            this.dequeue();
+        }
+        return true;
     }
 }
 
@@ -131,16 +188,65 @@ function getCurrentTimestamp() {
 }
 
 /**
+ * Objekt als formatierten String zurückgeben
+ * @param {Object} object Zu konvertierendes Objekt
+ */
+function objectToString(object) {
+    return JSON.stringify(object, undefined, 2);
+}
+
+/***
+ * Promise zur Übergabe der Log-Meldung an Host zum Schreiben in Datei
+ */
+const logToHost = (message) => new Promise(
+    function(resolve, reject) {
+        // Übermittlung an Hostanwendung
+        chrome.runtime.sendNativeMessage(
+            "com.github.kngp14.chromium.download.policy",
+            message,
+            (resp) => {
+                let error = chrome.runtime.lastError;
+                if(error != undefined) {
+                    // Promise nicht erfolgreich abgeschlossen --> catch()
+                    reject(`"${message["text"]}" konnte nicht in Datei geschrieben werden: ${error.message}`);
+                } else {
+                    if(resp != undefined) {
+                        // Promise erfolgreich abschließen --> then()
+                        resolve(resp);
+                    } else {
+                        // Promise nicht erfolgreich abgeschlossen --> catch()
+                        reject(`Response undefined --> lastError: ${error}`)
+                    }
+                }
+            }
+        );
+    }
+).then(
+    function(resolvedResult) {
+        console.log(`Meldung erfolgreich in Datei geschrieben! Rückgabe der Hostanwendung: ${objectToString(resolvedResult)}`);
+    }
+).catch(
+    function(rejectedError) {
+        console.error(`Meldung konnte nicht erfolgreich in Datei geschrieben werden! Fehlermeldung: ${objectToString(rejectedError)}`);
+    }
+)
+
+/**
  * Funktion zum Protokollieren
  * https://github.com/KNGP14/chromium-download-policy/issues/2
  * @param {string} msg Zu protokollierender String oder Objekt
  */
 function log(msg) {
-    if (typeof msg == "string") {
-        console.log(`${getCurrentTimestamp()} ${msg}`);
-    } else {
-        console.log(msg);
+
+    // Log-Eintrag formatieren
+    let message = {"text": `${getCurrentTimestamp()} ${msg}`};
+    if (typeof msg == "object") {
+        message = {"text": `${getCurrentTimestamp()} ${objectToString(msg)}`};
     }
+    console.log(message["text"]);
+
+    // Log-Eintrag zur Queue hinzufügen
+    Queue.enqueue(() => logToHost(message));    
 }
 
 function debugPrintErrorStorage() {
@@ -168,20 +274,20 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
             let errorForPopup = new ErrorForPopup(
                 ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
                 getCurrentTimestamp(),
-                `[Fehler] Compliance-Verstoß`,
+                `[Fehler] Compliance-Verstoss`,
                 [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
             );
-            log(`${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
 
             // Download abbrechen
             chrome.downloads.cancel(currentDownloadId, function() {
                 errorForPopup.addMessage(`Download wurde abgebrochen!`);
                 pushErrorForPopupToStorage(errorForPopup);
-                log("Download wurde abgebrochen und Badge aktualisiert");
+                log(`(${currentDownloadId}) Badge aktualisiert`);
             })
         } else {
             // Downloadpfad erlaubt
-            log(`Download entspricht Compliance-Vorgaben`);
+            log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`);
         }
     });
 }
@@ -193,8 +299,8 @@ chrome.runtime.onInstalled.addListener(function() {
 
     // Registry-Werte einlesen/testen
     log("Policies werden eingelesen ...");
-    chrome.storage.managed.get(function(value) {
-        log(value);
+    chrome.storage.managed.get(function(policiesObject) {
+        log(`Eingelesene Policies: ${objectToString(policiesObject)}`);
     });
 
     /**
@@ -211,7 +317,7 @@ chrome.runtime.onInstalled.addListener(function() {
             ` - mime:      ${item.mime} \n` +
             ` - filename:  ${item.filename} \n` +
             ` - startTime: ${new Date(item.startTime).toISOString()} \n` +
-            ` - finalUrl:  ${item.finalUrl} \n`
+            ` - finalUrl:  ${item.finalUrl}`
         );
 
         // Speicherort für Download prüfen und ggf. blockieren
@@ -232,7 +338,7 @@ chrome.runtime.onInstalled.addListener(function() {
             // TODO: Protokollierung in Dateisystem o.ä.
             log(
                 `(${changed.id}) Dateiname wurde festgelegt ...\n` +
-                ` - filename:  ${changed.filename.current} \n`
+                ` - filename:  ${changed.filename.current}`
             );
             
             // Speicherort für Download prüfen und ggf. blockieren
@@ -248,7 +354,7 @@ chrome.runtime.onInstalled.addListener(function() {
                 // TODO: Protokollierung in Dateisystem o.ä.
                 log(
                     `(${changed.id}) Download wurde abgebrochen ...\n` +
-                    ` - error:     ${changed.error.current} \n`
+                    ` - error:     ${changed.error.current}`
                 );
 
             } else if (changed.state.current == 'complete') {
@@ -257,7 +363,7 @@ chrome.runtime.onInstalled.addListener(function() {
                 // TODO: Protokollierung in Dateisystem o.ä.
                 log(
                     `(${changed.id}) Download wurde abgeschlossen ...\n` +
-                    ` - endTime:   ${new Date(changed.endTime.current).toISOString()} \n`
+                    ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
                 );
             }
         }

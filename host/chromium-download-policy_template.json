@@ -1,0 +1,10 @@
+
+{
+  "name": "com.github.kngp14.chromium.download.policy",
+  "description": "Chromium Download Policy",
+  "path": "SETUP_PATH",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://ioojeemhfgacfehcknfmmbahjckepcfe/"
+  ]
+}
