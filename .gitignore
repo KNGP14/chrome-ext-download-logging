@@ -1,4 +1,4 @@
 media/*.xd
 extension.crx
 host/chromium-download-policy.json
-host/log.txt
+*.log
