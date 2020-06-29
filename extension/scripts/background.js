@@ -205,17 +205,40 @@ const logToHost = (message) => new Promise(
             "com.github.kngp14.chromium.download.policy",
             message,
             (resp) => {
+                // Ergebnisobjekt für catch und then
+                let result = {
+                    info : "Unbekannter Fehler aufgetreten",
+                    messageToLog: message["text"],
+                    trace : undefined
+                }
+
+                // Fehler auslesen
                 let error = chrome.runtime.lastError;
+
                 if(error != undefined) {
-                    // Promise nicht erfolgreich abgeschlossen --> catch()
-                    reject(`"${message["text"]}" konnte nicht in Datei geschrieben werden: ${error.message}`);
+                    // Promise nicht erfolgreich abschließen --> catch()
+                    result.info = "Fehler bei Kommunikation mit Hostanwendung";
+                    result.trace = error.message;
+                    reject(result);
                 } else {
                     if(resp != undefined) {
-                        // Promise erfolgreich abschließen --> then()
-                        resolve(resp);
+                        if(resp.status == "SUCCESS") {
+                            // Promise erfolgreich abschließen --> then()
+                            result.info = resp.status;
+                            result.messageToLog = resp.recievedMessageText;
+                            resolve(result);
+                        } else {
+                            // Promise nicht erfolgreich abschließen --> catch()
+                            result.info = resp.status;
+                            result.messageToLog = resp.recievedMessageText;
+                            result.trace = resp.lastError;
+                            reject(result);
+                        }
                     } else {
-                        // Promise nicht erfolgreich abgeschlossen --> catch()
-                        reject(`Response undefined --> lastError: ${error}`)
+                        // Promise nicht erfolgreich abschließen --> catch()
+                        result.info = "Keine Rückgabe von Hostanwendung erhalten";
+                        result.trace = error;
+                        reject(result);
                     }
                 }
             }
@@ -223,11 +246,17 @@ const logToHost = (message) => new Promise(
     }
 ).then(
     function(resolvedResult) {
-        console.log(`Meldung erfolgreich in Datei geschrieben! Rückgabe der Hostanwendung: ${objectToString(resolvedResult)}`);
+        console.log({
+            "info" : "Meldung erfolgreich in Datei geschrieben.",
+            "info_details" : resolvedResult
+        });
     }
 ).catch(
     function(rejectedError) {
-        console.error(`Meldung konnte nicht erfolgreich in Datei geschrieben werden! Fehlermeldung: ${objectToString(rejectedError)}`);
+        console.error({
+            "error" : "Meldung konnte nicht erfolgreich in Datei geschrieben werden!",
+            "error_details": rejectedError
+        });
     }
 )
 
@@ -243,10 +272,25 @@ function log(msg) {
     if (typeof msg == "object") {
         message = {"text": `${getCurrentTimestamp()} ${objectToString(msg)}`};
     }
-    console.log(message["text"]);
 
-    // Log-Eintrag zur Queue hinzufügen
-    Queue.enqueue(() => logToHost(message));    
+    // Log-Pfad aus GPO auslesen
+    chrome.storage.managed.get(['gpoLogPath'], function (value) {
+        let gpoLogPath = "undefined";
+        if(!chrome.runtime.lastError) {
+            if (value.gpoLogPath != "") {
+                gpoLogPath = value.gpoLogPath;
+            }
+        }
+        message["logpath"] = gpoLogPath;
+
+        // Log-Eintrag zur Queue hinzufügen
+        console.log({
+            0: "Zu protokollierendes Ereignis:",
+            1: message
+        });
+        Queue.enqueue(() => logToHost(message));
+    });
+
 }
 
 function debugPrintErrorStorage() {

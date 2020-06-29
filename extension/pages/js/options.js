@@ -3,11 +3,23 @@
  */
 let downloadPath = document.getElementById('downloadPath');
 chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-    downloadPath.value = value.gpoDownloadPath;
+    let gpoDownloadPath = "undefined";
+    if(!chrome.runtime.lastError) {
+        if (value.gpoDownloadPath != "") {
+            gpoDownloadPath = value.gpoDownloadPath;
+        }
+    }
+    downloadPath.value = gpoDownloadPath;
 });
 let logPath = document.getElementById('logPath');
 chrome.storage.managed.get(['gpoLogPath'], function (value) {
-    logPath.value = value.gpoLogPath;
+    let gpoLogPath = "undefined";
+    if(!chrome.runtime.lastError) {
+        if (value.gpoLogPath != "") {
+            gpoLogPath = value.gpoLogPath;
+        }
+    }
+    logPath.value = gpoLogPath;
 });
 
 /**
