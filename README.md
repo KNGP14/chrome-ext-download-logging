@@ -17,7 +17,14 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades
 ### Derzeitiger Stand
  - Blockierung aller Downloads, die nicht nach `gpoDownloadPath` gespeichert werden
  - Darstellung von Meldungen in Popup inkl. Badge
- - Protokollierung aller Downloads erfolgt derzeit auf Konsole > Dateisystemzugriffe o.ä. [Issue #2](/../../issues/2)
+ - Protokollierung aller Downloads erfolgt derzeit in Logdatei auf Dateisystem mittels Hostanwendung
+ 
+### Installation der Hostanwendung
+Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript erforderlich.
+- Repository herunterladen und entpacken
+- Kommandozeile mit erhöten Rechten in Unterordner `host` öffnen
+- Installation der Host-Anwendung ausführen: `powershell -ExecutionPolicy RemoteSigned -File setup.ps1`
+- Zur Deinstallation der Host-Anwendung: `powershell -ExecutionPolicy RemoteSigned -File uninstall.ps1`
 
 ### Screenshots
 Nach Installation ohne Meldungen:<br>
