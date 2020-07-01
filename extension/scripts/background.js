@@ -157,7 +157,7 @@ function pushErrorForPopupToStorage(newError) {
  */
 function deleteAllErrorsForPopup() {
     chrome.storage.local.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
-        log("Alle Fehlermeldungen für Popup gelöscht", undefined);
+        log("Alle Fehlermeldungen für Popup gelöscht");
 
         // Badge nach Löschen aller Meldungen entfernen
         // https://github.com/KNGP14/chromium-download-policy/issues/1
@@ -307,13 +307,13 @@ function log(msg, resultFunction) {
 
 function debugPrintErrorStorage() {
     chrome.storage.local.get([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
-        log("debugPrintErrorStorage():", undefined);
-        log(storage[ErrorForPopup.STORAGEIDENTIFIER], undefined);
+        log("debugPrintErrorStorage():");
+        log(storage[ErrorForPopup.STORAGEIDENTIFIER]);
     });
 }
 
 function debugClearStorage() {
-    chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht", undefined); });
+    chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht"); });
 
 }
 
@@ -333,17 +333,17 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
                 `[Fehler] Compliance-Verstoss`,
                 [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
             );
-            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`, undefined);
+            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
 
             // Download abbrechen
             chrome.downloads.cancel(currentDownloadId, function() {
                 errorForPopup.addMessage(`Download wurde abgebrochen!`);
                 pushErrorForPopupToStorage(errorForPopup);
-                log(`(${currentDownloadId}) Badge aktualisiert`, undefined);
+                log(`(${currentDownloadId}) Badge aktualisiert`);
             })
         } else {
             // Downloadpfad erlaubt
-            log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`, undefined);
+            log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`);
         }
     });
 }
@@ -354,9 +354,9 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
 chrome.runtime.onInstalled.addListener(function() {
 
     // Registry-Werte einlesen/testen
-    log("Policies werden eingelesen ...", undefined);
+    log("Policies werden eingelesen ...");
     chrome.storage.managed.get(function(policiesObject) {
-        log(`Eingelesene Policies: ${objectToString(policiesObject)}`, undefined);
+        log(`Eingelesene Policies: ${objectToString(policiesObject)}`);
     });
 
     /**
@@ -373,8 +373,7 @@ chrome.runtime.onInstalled.addListener(function() {
             ` - mime:      ${item.mime} \n` +
             ` - filename:  ${item.filename} \n` +
             ` - startTime: ${new Date(item.startTime).toISOString()} \n` +
-            ` - finalUrl:  ${item.finalUrl}`,
-            undefined
+            ` - finalUrl:  ${item.finalUrl}`
         );
 
         // Speicherort für Download prüfen und ggf. blockieren
@@ -395,8 +394,7 @@ chrome.runtime.onInstalled.addListener(function() {
             // TODO: Protokollierung in Dateisystem o.ä.
             log(
                 `(${changed.id}) Dateiname wurde festgelegt ...\n` +
-                ` - filename:  ${changed.filename.current}`,
-                undefined
+                ` - filename:  ${changed.filename.current}`
             );
             
             // Speicherort für Download prüfen und ggf. blockieren
@@ -412,8 +410,7 @@ chrome.runtime.onInstalled.addListener(function() {
                 // TODO: Protokollierung in Dateisystem o.ä.
                 log(
                     `(${changed.id}) Download wurde abgebrochen ...\n` +
-                    ` - error:     ${changed.error.current}`,
-                    undefined
+                    ` - error:     ${changed.error.current}`
                 );
 
             } else if (changed.state.current == 'complete') {
@@ -422,8 +419,7 @@ chrome.runtime.onInstalled.addListener(function() {
                 // TODO: Protokollierung in Dateisystem o.ä.
                 log(
                     `(${changed.id}) Download wurde abgeschlossen ...\n` +
-                    ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`,
-                    undefined
+                    ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
                 );
             }
         }
