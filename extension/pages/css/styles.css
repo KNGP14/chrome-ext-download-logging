@@ -159,6 +159,9 @@ div.popup {
     font-size: 1.1em;
     font-weight: 500;
 }
+.options-input {
+    width: 50%;
+}
 
 /* Globale Styles für dunkles Design */
 @media (prefers-color-scheme: dark) {

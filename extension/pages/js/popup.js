@@ -13,6 +13,18 @@ divAppVer.innerText = `Version: ${chrome.runtime.getManifest().version}`;
 let divAppTitle = document.getElementById('popup-app-header-title');
 divAppTitle.innerText = `${chrome.runtime.getManifest().name}`;
 
+// Host-Kommunikation testen
+let bg = chrome.extension.getBackgroundPage();
+bg.log("Verbindungstest zur Hostanwendung", (status, result) => {
+    if (status == "SUCCESS") {
+        status = `✔`;
+    } else {
+        status = `⛔`;
+    }
+    divAppTitle.innerText = `${chrome.runtime.getManifest().name} ${status}`;
+});
+
+
 // Download- und Protokoll-Pfad aus Registry auslesen
 let downloadPath = document.getElementById('downloadPath');
 chrome.storage.managed.get(['gpoDownloadPath'], function (value) {

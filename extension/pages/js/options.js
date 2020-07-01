@@ -42,3 +42,12 @@ chrome.storage.managed.get(null, function(items) {
         regValueList.appendChild(regValue);
     });
 });
+
+/**
+ * Host-Kommunikation testen
+ */
+let hostStatus = document.getElementById('hostStatus');
+let bg = chrome.extension.getBackgroundPage();
+bg.log("Verbindungstest zur Hostanwendung", (status, result) => {
+    hostStatus.value = `${status}`;
+});
