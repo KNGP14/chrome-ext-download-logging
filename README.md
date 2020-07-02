@@ -2,25 +2,26 @@
 
 :warning: **Hinweis**: Erweiterung befindet sich noch in der Entwicklung!
 
-Chromium bietet die Möglichkeit, über Gruppenrichtlinien den Download-Pfad zu erzwingen.<br>Problem: Downloads über die Kontextmenü-Funktion `(Bild|Link|...) Speichern unter` können nicht kontrolliert werden.
+Chromium bietet die Möglichkeit, über Gruppenrichtlinien das Downloadverzeichnis zu erzwingen.<br>Problem: Downloads über die Kontextmenü-Funktion `(Bild|Link|...) Speichern unter` können nicht kontrolliert werden.
 
-Bei der Nutzung eines Chromium-Browsers als zentrale Downloadlösung sind weitere Dateioperationen, wie die Prüfung durch mehrere Antiviruslösungen oder eine Bereitstellung auf Austauschlaufwerken erforderlich.<br>Dadurch ist es zwingend erforderlich, dass Downloads stets in fest definierten Pfaden abgelegt werden.
+Bei der Nutzung eines Chromium-Browsers als zentrale Downloadlösung sind weitere Dateioperationen, wie die Prüfung durch mehrere Antiviruslösungen oder eine Bereitstellung auf Austauschlaufwerken erforderlich.<br>Dadurch ist es zwingend erforderlich, dass alle Downloads stets in fest definierten Pfaden abgelegt werden.
 
-Mithilfe dieser Erweiterung soll der Download auch über das Konktextmenü auf ein bestimmtes Verzeichnis beschränkt werden.<br>Zusätzlich soll eine umfangreiche Protokollierung der Downloads erfolgen.
+Mithilfe dieser Erweiterung wird der Download auch über das Konktextmenü auf ein bestimmtes Verzeichnis beschränkt.<br>Zusätzlich wird eine umfangreiche Protokollierung der Downloads.
 
 ## Implementierte Funktionen
- - Blockierung aller Downloads, die nicht nach `gpoDownloadPath` gespeichert werden
+ - Blockierung aller Downloads, die nicht in das per Registry-Eintrag definierte Verzeichnis gespeichert werden
  - Darstellung von Meldungen in Popup inkl. Badge
- - Protokollierung aller Downloads erfolgt derzeit in Logdatei auf Dateisystem mittels Hostanwendung
+ - Protokollierung aller Downloads in eine Logdatei `USERNAME_download.log` in dem per Registry-Eintrag definierten Verzeichnis
 
 ## Registry-Einträge
-Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades ist jeweils ein Registry-Einträg zu erstellen.<br>
+Für die Definition des erlaubten Downloadverzeichnisses und des Protokollverzeichnisses ist jeweils ein Registry-Einträg zu erstellen.<br>
 `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\${browserVendor}\\${browserName}\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
  - `gpoDownloadPath (REG_SZ)`
  - `gpoLogPath (REG_SZ)`
+ Hinweis: Sofern `gpoLogPath` nicht definiert (oder leer), erfolgt die Protokollierung in einen `logs`-Unterordner im Verzeichnis der Host-Anwendung
  
 ## Installation der Hostanwendung
-Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript erforderlich.
+Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript (Windows) erforderlich.
 - Repository herunterladen und entpacken
 - Kommandozeile mit erhöten Rechten in Unterordner `host` öffnen
 - Installation der Host-Anwendung ausführen: `powershell -ExecutionPolicy RemoteSigned -File setup.ps1`
