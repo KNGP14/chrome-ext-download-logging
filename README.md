@@ -12,13 +12,16 @@ Mithilfe dieser Erweiterung wird der Download auch über das Konktextmenü auf e
  - Blockierung aller Downloads, die nicht in das per Registry-Eintrag definierte Verzeichnis gespeichert werden
  - Darstellung von Meldungen in Popup inkl. Badge
  - Protokollierung aller Downloads in eine Logdatei `USERNAME_download.log` in dem per Registry-Eintrag definierten Verzeichnis
+ - Kompatibilität nur für Windows
 
 ## Registry-Einträge
 Für die Definition des erlaubten Downloadverzeichnisses und des Protokollverzeichnisses ist jeweils ein Registry-Einträg zu erstellen.<br>
 `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\${browserVendor}\\${browserName}\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
  - `gpoDownloadPath (REG_SZ)`
  - `gpoLogPath (REG_SZ)`
- Hinweis: Sofern `gpoLogPath` nicht definiert (oder leer), erfolgt die Protokollierung in einen `logs`-Unterordner im Verzeichnis der Host-Anwendung
+
+**Hinweis:**<br>
+Sofern `gpoLogPath` nicht definiert (oder leer), erfolgt die Protokollierung in einen `logs`-Unterordner im Verzeichnis der Host-Anwendung.
  
 ## Installation der Hostanwendung
 Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript (Windows) erforderlich.
