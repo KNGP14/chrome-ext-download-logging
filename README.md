@@ -29,25 +29,25 @@ Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwe
 ## Screenshots
 ### Nach Installation ohne Meldungen
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="100px">
 </p>
 
 ### Erweiterungsoptionen
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" height="100px">
 </p>
 
 ### Download über Kontextmenü starten
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png" height="100px">
 </p>
 
 ### Abgebrochener Download mit Benachrichtigungspunkt
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png" height="100px">
 </p>
 
 ### Angezeigte Fehlermeldung
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png" height="100px">
 </p>
