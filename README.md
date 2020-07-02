@@ -31,18 +31,22 @@ Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwe
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png">
 </p>
+
 ### Erweiterungsoptionen
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png">
 </p>
+
 ### Download über Kontextmenü starten
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png">
 </p>
+
 ### Abgebrochener Download mit Benachrichtigungspunkt
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png">
 </p>
+
 ### Angezeigte Fehlermeldung
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png">
