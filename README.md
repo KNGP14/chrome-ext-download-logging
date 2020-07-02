@@ -18,7 +18,8 @@ Für die Definition des erlaubten Downloadverzeichnisses und des Protokollverzei
 `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\${browserVendor}\\${browserName}\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
  - `gpoDownloadPath (REG_SZ)`
  - `gpoLogPath (REG_SZ)`
- Hinweis: Sofern `gpoLogPath` nicht definiert (oder leer), erfolgt die Protokollierung in einen `logs`-Unterordner im Verzeichnis der Host-Anwendung
+
+Hinweis: Sofern `gpoLogPath` nicht definiert (oder leer), erfolgt die Protokollierung in einen `logs`-Unterordner im Verzeichnis der Host-Anwendung
  
 ## Installation der Hostanwendung
 Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript (Windows) erforderlich.
