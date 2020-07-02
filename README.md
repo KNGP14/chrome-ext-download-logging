@@ -27,28 +27,14 @@ Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwe
 - Zur Deinstallation der Host-Anwendung: `powershell -ExecutionPolicy RemoteSigned -File uninstall.ps1`
 
 ## Screenshots
-### Nach Installation ohne Meldungen
+### Popup ohne Meldungen und Erweiterungsoptionen
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png" height="300px">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" height="300px">
 </p>
 
-### Erweiterungsoptionen
-<p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png" height="300px">
-</p>
-
-### Download über Kontextmenü starten
-<p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png" height="300px">
-</p>
-
-### Abgebrochener Download mit Benachrichtigungspunkt
+### Abgebrochener Download mit Benachrichtigungspunkt und angezeigte Fehlermeldung
 <p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png" height="300px">
-</p>
-
-### Angezeigte Fehlermeldung
-<p align="center">
  <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png" height="300px">
 </p>
