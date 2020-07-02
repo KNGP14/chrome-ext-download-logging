@@ -42,5 +42,5 @@ Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwe
 
 ### Logdatei
 <p align="center">
- <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_logfile.png" height="300px">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_logfile.png" height="250px">
 </p>
