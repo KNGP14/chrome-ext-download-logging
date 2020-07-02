@@ -1,6 +1,9 @@
-/**
- * Download- und Protokoll-Pfad aus Registry auslesen
- */
+
+// App-Name aus Manifest einlesen
+let divAppTitle = document.getElementById('options-header-title');
+divAppTitle.innerText = `${chrome.runtime.getManifest().name}`;
+
+// Download- und Protokoll-Pfad aus Registry auslesen
 let downloadPath = document.getElementById('downloadPath');
 chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
     let gpoDownloadPath = "undefined";
@@ -22,32 +25,48 @@ chrome.storage.managed.get(['gpoLogPath'], function (value) {
     logPath.value = gpoLogPath;
 });
 
-/**
- * Regsitry-Pfad für Gruppenrichtlinie zusammensetzen
- */
+// Host-Kommunikation testen
+let hostStatus = document.getElementById('hostStatus');
+hostStatus.value = `⚫ WIRD GELADEN`;
+let currentLogFile = document.getElementById('currentLogFile');
+let bg = chrome.extension.getBackgroundPage();
+bg.log("TEST_HOST_COMMUNICATION", (status, result) => {
+    if (status == "SUCCESS") {
+        hostStatus.value = `🟢 VERBUNDEN`;
+    } else {
+        hostStatus.value = `🔴 FEHLER (SIEHE KONSOLENAUSGABE)`;
+    }
+    currentLogFile.value = `${result.logFile}`;
+});
+
+// Regsitry-Pfad für Gruppenrichtlinie zusammensetzen
 let regPath = document.getElementById('regPath');
-regPath.innerText = `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Edge\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`;
+let browserPath = `Google\\Chrome`;
+if(window.navigator.userAgent.toLowerCase().indexOf("edg") > -1){
+    browserPath = `Microsoft\\Edge`;
+}
+regPath.innerText = `HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\${browserPath}\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`;
 
 
-/**
- * Registry-Einträge ausgeben
- */
+// Registry-Einträge ausgeben
 let regValueList = document.getElementById('regValues');
 chrome.storage.managed.get(null, function(items) {
     let regValues = Object.keys(items);
     regValues.forEach(element => {
         let regValue = document.createElement("li");
-        let textnode = document.createTextNode(element);
-        regValue.appendChild(textnode);
+        regValue.innerHTML = `<code>${element}</code>`;
         regValueList.appendChild(regValue);
     });
 });
 
-/**
- * Host-Kommunikation testen
- */
-let hostStatus = document.getElementById('hostStatus');
-let bg = chrome.extension.getBackgroundPage();
-bg.log("Verbindungstest zur Hostanwendung", (status, result) => {
-    hostStatus.value = `${status}`;
-});
+// App-Details abrufen
+let appDetails = document.getElementById('appDetails');
+let version = document.createElement("li");
+version.innerHTML = `<div>Version: ${chrome.runtime.getManifest().version}</div>`;
+appDetails.appendChild(version);
+let developer = document.createElement("li");
+developer.innerHTML = `<div>Entwickler: ${chrome.runtime.getManifest().author}</div>`;
+appDetails.appendChild(developer);
+let repository = document.createElement("li");
+repository.innerHTML = `<div>Quellcode: <a href="https://github.com/KNGP14/chromium-download-policy">https://github.com/KNGP14/chromium-download-policy</a></div>`;
+appDetails.appendChild(repository);

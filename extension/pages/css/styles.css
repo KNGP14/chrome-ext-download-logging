@@ -12,7 +12,7 @@
 /* Globale Styles */
 * {
     font-family: "system-ui", Helvetica, sans-serif, sans-serif;
-    font-size: 1.05em;
+    font-size: 1.04em;
 }
 body {
     margin: 0px;
@@ -34,6 +34,11 @@ li {
 input[type=text],
 input[type=password] {
     box-sizing : border-box;
+    margin: 0.2em 0;
+}
+code {
+    font-family: monospace;
+    font-size: 1.2em;
 }
 a, .link {
     border-bottom: 1px solid var(--light-link-color);
@@ -68,10 +73,9 @@ div.popup {
 .popup-header-title {
     font-size: 1.3em;
     font-weight: 600;
-    margin-bottom: 0.2em;
 }
 .popup-panel {
-    margin: 16px;
+    margin: 12px 16px;
 }
 .popup-panel:nth-of-type(1) {
     margin-bottom: 0px;
@@ -124,39 +128,45 @@ div.popup {
 }
 .popup-description {
     font-size: 0.9em;
+    margin-top: 0.5em;
     margin-bottom: 0.3em;
 }
-.popup-downloadpath {
+.popup-input {
     font-size: 0.9em;
     margin-top: 0.4em;
     width: 100%;
 }
 
 /* Style für Erweiterungsoptionen */
-.options {
-    margin: 1% 2%;
+#options {
+    margin: 1%;
 }
-.options-header-title {
+p.options {
+    margin: 0 0 0.3em 0;
+}
+label.options {
+    margin: 0 0 0.1em 0;
+}
+#options-header-title {
     font-weight: 600;
     font-size: 1.9em;
     margin-bottom: 0.7em;
 }
-.options-header-subtitle {
-    font-weight: 500;
-    font-size: 1.3em;
+#options-header-subtitle {
+    font-size: 1.12em;
 }
 .options-option {
-    padding-top: 1em;
+    padding-top: 0.6em;
+    padding-left: 0.4em;
 }
 .options-block {
-    padding-top: 1em;
+    padding-top: 1.3em;
 }
 .options-block:nth-of-type(1) {
     padding-top: 0em;
 }
 .options-headline {
-    padding-top: 1em;
-    font-size: 1.1em;
+    font-size: 1.3em;
     font-weight: 500;
 }
 .options-input {

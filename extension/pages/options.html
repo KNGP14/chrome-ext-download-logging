@@ -7,32 +7,50 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="options">
-        <div class="options-header-title">Download-Protokollierung</div>
-        <div class="options-header-subtitle">Protokollierung aller Downloads und Blockierung nicht erlaubter Downloadpfade (inkl. "Speichern Unter")</div>
+    <div id="options">
+        <div id="options-header-title"></div>
+        <div id="options-header-subtitle">
+            Mithilfe dieser Erweiterung werden Downloads (insbesondere <code>"Speichern Unter"</code>-Funktion im Kontextmenü) über Gruppenrichtlinien nur in ein definitiertes Verzeichnis zugelassen.</br>
+            Zusätzlich erfolgt eine ausführliche Protokollierung aller Downloads auf das Dateisystem.
+        </div>
         <div class="options-block">
             <div class="options-headline">Angewandte Richtlinien</div>
             <div class="options-option">
-                <label for="downloadPath">Download-Pfad:</label><br>
+                <p class="options">Zum Zwecke der zentralen Steuerung und Überwachung sind Downloads in einem fest definierten Verzeichnis abzulegen.</p>
+                <label class="options" for="downloadPath">Downloadverzeichnis:</label><br>
                 <input type="text" class="options-input" id="downloadPath" disabled="true">
             </div>
             <div class="options-option">
-                <label for="logPath">Protokoll-Pfad:</label><br>
+                <p class="options">
+                    Zur Überwachung der heruntergeladenen Dateien erfolgt eine Protokollierung auf dem Dateisystem nach dem Namensschema <code>'USERNAME_download.log'</code>.<br>
+                    Sofern kein Verzeichnis angegeben wurde <code>(undefined)</code>, wird im Ordner der Hostanwendung in einem <code>'logs'</code>-Unterordner protokolliert.
+                </p>
+                <label class="options" for="logPath">Protokollverzeichnis:</label><br>
                 <input type="text" class="options-input" id="logPath" disabled="true">
             </div>
         </div>
         <div class="options-block">
-            <div class="options-headline">Status der Host-Anwendung</div>
+            <div class="options-headline">Verbindung zur Host-Anwendung</div>
             <div class="options-option">
-                <label for="hostStatus">Status:</label><br>
-                <input type="text" class="options-input" id="hostStatus" disabled="true">
+                <p class="options">Für einen Zugriff auf das Dateisystem wird eine Host-Anwendung aufgrund der Sandbox unter Chromium benötigt.</p>
+                <label class="options" for="hostStatus">Verbindungsstatus:</label><br>
+                <input type="text" class="options-input" id="hostStatus" disabled="true"><br>
+                <label class="options" for="currentLogFile">Protokoll-Datei:</label><br>
+                <input type="text" class="options-input" id="currentLogFile" disabled="true">
             </div>
         </div>
         <div class="options-block">
             <div class="options-headline">Registry-Pfad für Richtlinien zur Anwendung &uuml;ber Gruppenrichtlinien</div>
             <div class="options-option">
-                <div id="regPath"></div>
+                <code id="regPath"></code>
                 <ul id="regValues"></ul>
+            </div>
+        </div>
+        <div class="options-block">
+            <div class="options-headline">Technische Informationen zur Erweiterung</div>
+            <div class="options-option">
+                <div>Made with 💗 from Germany 🏳️‍🌈</div>
+                <ul id="appDetails"></ul>
             </div>
         </div>
     </div>

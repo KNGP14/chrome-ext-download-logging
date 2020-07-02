@@ -4,7 +4,9 @@ var ErrorForPopup = class {
 
     // Fehlertypen
     static TYPES = {
-        BLOCKEDDOWNLOAD: 1
+        BLOCKEDDOWNLOAD: 1,
+        FAILEDHOSTCOMMUNICATION: 2,
+        MISSINGGPO: 3
     }
 
     // Konstante für Identifier der Fehlermeldungen in localStorage
@@ -157,7 +159,9 @@ function pushErrorForPopupToStorage(newError) {
  */
 function deleteAllErrorsForPopup() {
     chrome.storage.local.remove([ErrorForPopup.STORAGEIDENTIFIER], function(storage) {
-        log("Alle Fehlermeldungen für Popup gelöscht");
+        console.log({
+            "info": "Alle Fehlermeldungen für Popup gelöscht"
+        });
 
         // Badge nach Löschen aller Meldungen entfernen
         // https://github.com/KNGP14/chromium-download-policy/issues/1
@@ -210,6 +214,7 @@ const logToHost = (message, resultFunction) => new Promise(
                     info : "Unbekannter Fehler aufgetreten",
                     messageToLog: message["text"],
                     trace : undefined,
+                    logFile: "Unbekannt",
                     function: resultFunction
                 }
 
@@ -217,29 +222,36 @@ const logToHost = (message, resultFunction) => new Promise(
                 let error = chrome.runtime.lastError;
 
                 if(error != undefined) {
+
                     // Promise nicht erfolgreich abschließen --> catch()
                     result.info = "Fehler bei Kommunikation mit Hostanwendung";
                     result.trace = error.message;
                     reject(result);
+
                 } else {
                     if(resp != undefined) {
+
+                        // Rückgabe auswerten
+                        result.info = resp.status;
+                        result.messageToLog = resp.recievedMessageText;
+                        result.logFile = resp.logFile;
+
                         if(resp.status == "SUCCESS") {
                             // Promise erfolgreich abschließen --> then()
-                            result.info = resp.status;
-                            result.messageToLog = resp.recievedMessageText;
                             resolve(result);
                         } else {
                             // Promise nicht erfolgreich abschließen --> catch()
-                            result.info = resp.status;
-                            result.messageToLog = resp.recievedMessageText;
                             result.trace = resp.lastError;
                             reject(result);
                         }
+
                     } else {
+
                         // Promise nicht erfolgreich abschließen --> catch()
                         result.info = "Keine Rückgabe von Hostanwendung erhalten";
                         result.trace = error;
                         reject(result);
+
                     }
                 }
             }
@@ -263,9 +275,18 @@ const logToHost = (message, resultFunction) => new Promise(
             "error" : "Meldung konnte nicht erfolgreich in Datei geschrieben werden!",
             "error_details": result
         });
+        
+        // Fehlermeldung in Popup anzeigen
+        let errorForPopup = new ErrorForPopup(
+            ErrorForPopup.TYPES.FAILEDHOSTCOMMUNICATION,
+            getCurrentTimestamp(),
+            `[Fehler] Kommunikationsproblem mit Hostanwendung`,
+            [`Meldungen konnten nicht in Log-Datei geschrieben werden!`]
+        );
+        pushErrorForPopupToStorage(errorForPopup);
 
         // Optionale Ergebnisfunktion ausführen
-        if (typeof result.function != "function") {
+        if (typeof result.function == "function") {
             result.function("FAILURE", result);
         }
     }
@@ -297,8 +318,8 @@ function log(msg, resultFunction) {
 
         // Log-Eintrag zur Queue hinzufügen
         console.log({
-            0: "Zu protokollierendes Ereignis:",
-            1: message
+            "info": "Zu protokollierendes Ereignis:",
+            "info_details": message
         });
         Queue.enqueue(() => logToHost(message, resultFunction));
     });
@@ -324,26 +345,55 @@ function debugClearStorage() {
  */
 function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) {
     chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-        if (currentDownloadPath != "" && !currentDownloadPath.startsWith(value.gpoDownloadPath)) {
-            // Downloadpfad nicht erlaubt
+
+        let gpoDownloadPath = "undefined";
+        if(!chrome.runtime.lastError) {
+            if (value.gpoDownloadPath != "") {
+                gpoDownloadPath = value.gpoDownloadPath;
+            }
+        }
+
+        if (gpoDownloadPath != "undefined") {
+
+            if (currentDownloadPath != "" && !currentDownloadPath.startsWith(value.gpoDownloadPath)) {
+                // Downloadpfad nicht erlaubt
+                
+                let errorForPopup = new ErrorForPopup(
+                    ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
+                    getCurrentTimestamp(),
+                    `[Fehler] Compliance-Verstoss`,
+                    [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
+                );
+                log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+
+                // Download abbrechen
+                chrome.downloads.cancel(currentDownloadId, function() {
+                    errorForPopup.addMessage(`Download wurde abgebrochen!`);
+                    pushErrorForPopupToStorage(errorForPopup);
+                })
+            } else {
+                // Downloadpfad erlaubt
+                log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`);
+            }
             
+        } else {
+
+            // Kein Download-Pfad per GPO gesetzt
             let errorForPopup = new ErrorForPopup(
-                ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
+                ErrorForPopup.TYPES.MISSINGGPO,
                 getCurrentTimestamp(),
-                `[Fehler] Compliance-Verstoss`,
-                [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
+                `[Fehler] Fehlende Gruppenrichtlinie`,
+                [`Downloadverzeichnis wurde nicht per Gruppenrichtlinie definiert.`,
+                 `Prüfung der Downloads kann nicht erfolgen.`]
             );
-            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]}\n${errorForPopup.getMessages()[0]}\nDownload wird abgebrochen ...`);
 
             // Download abbrechen
             chrome.downloads.cancel(currentDownloadId, function() {
                 errorForPopup.addMessage(`Download wurde abgebrochen!`);
                 pushErrorForPopupToStorage(errorForPopup);
-                log(`(${currentDownloadId}) Badge aktualisiert`);
             })
-        } else {
-            // Downloadpfad erlaubt
-            log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`);
+
         }
     });
 }
