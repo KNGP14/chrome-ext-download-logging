@@ -306,6 +306,21 @@ function log(msg, resultFunction) {
         message = {"text": `${getCurrentTimestamp()} ${objectToString(msg)}`};
     }
 
+    // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
+    message["text"] = message["text"].replace(/´/g, "?");
+    message["text"] = message["text"].replace(/`/g, "?");
+    message["text"] = message["text"].replace(/§/g, "?");
+    message["text"] = message["text"].replace(/²/g, "?");
+    message["text"] = message["text"].replace(/³/g, "?");
+    message["text"] = message["text"].replace(/°/g, "?");
+    message["text"] = message["text"].replace(/ä/g, "ae");
+    message["text"] = message["text"].replace(/ö/g, "oe");
+    message["text"] = message["text"].replace(/ü/g, "ue");
+    message["text"] = message["text"].replace(/Ä/g, "Ae");
+    message["text"] = message["text"].replace(/Ö/g, "Oe");
+    message["text"] = message["text"].replace(/Ü/g, "Ue");
+    message["text"] = message["text"].replace(/ß/g, "ss");
+
     // Log-Pfad aus GPO auslesen
     chrome.storage.managed.get(['gpoLogPath'], function (value) {
         let gpoLogPath = "undefined";
