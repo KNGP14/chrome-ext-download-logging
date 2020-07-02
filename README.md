@@ -8,36 +8,42 @@ Bei der Nutzung eines Chromium-Browsers als zentrale Downloadlösung sind weiter
 
 Mithilfe dieser Erweiterung soll der Download auch über das Konktextmenü auf ein bestimmtes Verzeichnis beschränkt werden.<br>Zusätzlich soll eine umfangreiche Protokollierung der Downloads erfolgen.
 
-### Registry-Einträge
-Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades ist jeweils ein Registry-Einträg zu erstellen.<br>Hinweis: Registry-Pfad variiert je nach Chromium-Browser<br>
-`HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Edge\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
- - `gpoDownloadPath (REG_SZ)`
- - `gpoLogPath (REG_SZ)`
-
-### Derzeitiger Stand
+## Implementierte Funktionen
  - Blockierung aller Downloads, die nicht nach `gpoDownloadPath` gespeichert werden
  - Darstellung von Meldungen in Popup inkl. Badge
  - Protokollierung aller Downloads erfolgt derzeit in Logdatei auf Dateisystem mittels Hostanwendung
+
+## Registry-Einträge
+Für die Definition des erlaubten Downloadverzeichnisses und des Protokollpfades ist jeweils ein Registry-Einträg zu erstellen.<br>
+`HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\${browserVendor}\\${browserName}\\3rdparty\\extensions\\${chrome.runtime.id}\\policy`
+ - `gpoDownloadPath (REG_SZ)`
+ - `gpoLogPath (REG_SZ)`
  
-### Installation der Hostanwendung
+## Installation der Hostanwendung
 Für die Protokollierung in eine Logdatei auf dem Dateisystem ist eine Host-Anwendung in Form von einem Powershell-Skript erforderlich.
 - Repository herunterladen und entpacken
 - Kommandozeile mit erhöten Rechten in Unterordner `host` öffnen
 - Installation der Host-Anwendung ausführen: `powershell -ExecutionPolicy RemoteSigned -File setup.ps1`
 - Zur Deinstallation der Host-Anwendung: `powershell -ExecutionPolicy RemoteSigned -File uninstall.ps1`
 
-### Screenshots
-Nach Installation ohne Meldungen:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png">
-
-Erweiterungsoptionen:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png">
-
-Download über Kontextmenü starten:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png">
-
-Abgebrochener Download mit Benachrichtigungspunkt:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png">
-
-Angezeigte Fehlermeldung:<br>
- - <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png">
+## Screenshots
+### Nach Installation ohne Meldungen
+<p align="center">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_no-messages.png">
+</p>
+### Erweiterungsoptionen
+<p align="center">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_options-page.png">
+</p>
+### Download über Kontextmenü starten
+<p align="center">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_start-download.png">
+</p>
+### Abgebrochener Download mit Benachrichtigungspunkt
+<p align="center">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-and-badge.png">
+</p>
+### Angezeigte Fehlermeldung
+<p align="center">
+ <img src="https://github.com/KNGP14/chromium-download-policy/blob/master/media/prev_cancled-download-message.png">
+</p>
