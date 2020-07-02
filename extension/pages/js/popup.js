@@ -13,10 +13,28 @@ divAppVer.innerText = `Version: ${chrome.runtime.getManifest().version}`;
 let divAppTitle = document.getElementById('popup-app-header-title');
 divAppTitle.innerText = `${chrome.runtime.getManifest().name}`;
 
+// Host-Kommunikation testen
+let hostStatus = document.getElementById('hostStatus');
+hostStatus.value = `⚫ WIRD GELADEN`;
+let bg = chrome.extension.getBackgroundPage();
+bg.log("TEST_HOST_COMMUNICATION", (status, result) => {
+    if (status == "SUCCESS") {
+        hostStatus.value = `🟢 VERBUNDEN`;
+    } else {
+        hostStatus.value = `🔴 FEHLER (SIEHE KONSOLENAUSGABE)`;
+    }
+});
+
 // Download- und Protokoll-Pfad aus Registry auslesen
 let downloadPath = document.getElementById('downloadPath');
 chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-    downloadPath.value = value.gpoDownloadPath;
+    let gpoDownloadPath = "undefined";
+    if(!chrome.runtime.lastError) {
+        if (value.gpoDownloadPath != "") {
+            gpoDownloadPath = value.gpoDownloadPath;
+        }
+    }
+    downloadPath.value = gpoDownloadPath;
 });
 
 // Meldungen anzeigen und Badge löschen
@@ -55,15 +73,19 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
                                 // Template für Popup-Message clonen
                                 let divPopupMessage = htmlTemplate.cloneNode(true);
         
-                                // Icon und Titel der 
-                                divPopupMessage.getElementsByClassName("popup-message-title-icon")[0].innerText = `\u26A0`;
-                                divPopupMessage.getElementsByClassName("popup-message-title")[0].innerText = `${error.timestamp} ${error.title}`;
+                                // Icon und Titel der Nachricht
+                                let icon = `⚠ `;
+                                if(error.title.toLowerCase().indexOf("fehler") > -1) {
+                                    icon = `⛔`;
+                                }
+                                divPopupMessage.getElementsByClassName("popup-message-title-icon")[0].innerText = icon;
+                                divPopupMessage.getElementsByClassName("popup-message-title")[0].innerHTML = `${error.timestamp} ${error.title}`;
         
                                 error.msgLines.forEach(line => {
                                     if(divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText == "") {
-                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText = `${line}`
+                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerHTML = `${line}`
                                     } else {
-                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerText += `\n${line}`
+                                        divPopupMessage.getElementsByClassName("popup-message-text")[0].innerHTML += `<br>${line}`
                                     }
                                 });
         
@@ -79,8 +101,10 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
 
             }
 
-            // Fehlermeldungen löschen und Badge entfernen
-            bg.deleteAllErrorsForPopup();
         });
+
+        // Fehlermeldungen löschen und Badge entfernen
+        bg.deleteAllErrorsForPopup();
+
     }
 });
