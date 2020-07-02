@@ -74,7 +74,7 @@ chrome.browserAction.getBadgeText({}, (badgeText) => {
                                 let divPopupMessage = htmlTemplate.cloneNode(true);
         
                                 // Icon und Titel der Nachricht
-                                let icon = `⚠ `;
+                                let icon = `⚠`;
                                 if(error.title.toLowerCase().indexOf("fehler") > -1) {
                                     icon = `⛔`;
                                 }
