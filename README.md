@@ -11,7 +11,8 @@ Mithilfe dieser Erweiterung wird der Download auch über das Konktextmenü auf e
 ## Implementierte Funktionen
  - Blockierung aller Downloads, die nicht in das per Registry-Eintrag definierte Verzeichnis gespeichert werden
  - Darstellung von Meldungen in Popup inkl. Badge
- - Protokollierung aller Downloads in eine Logdatei `USERNAME_download.log` in dem per Registry-Eintrag definierten Verzeichnis (nur unter Windows)
+ - Protokollierung aller Downloads in eine Logdatei `USERNAME_download.log` in dem per Registry-Eintrag definierten Verzeichnis
+ - Kompatibilität nur für Windows
 
 ## Registry-Einträge
 Für die Definition des erlaubten Downloadverzeichnisses und des Protokollverzeichnisses ist jeweils ein Registry-Einträg zu erstellen.<br>
