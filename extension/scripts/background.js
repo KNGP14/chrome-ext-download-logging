@@ -353,7 +353,8 @@ function debugPrintErrorStorage() {
  * Funktion zum Aufruf des Download-Scanskripts über Hostanwendung
  * @param {integer} currentDownloadId ID des abgeschlossenen und zu scannenden Downloads
  */
-function callDownloadScan(currentDownloadId) {
+function runDownloadScanner(currentDownloadId) {
+
     // DownloadItem anhand ID ermitteln
     let searchQuery = {
         id: currentDownloadId,
@@ -365,6 +366,34 @@ function callDownloadScan(currentDownloadId) {
 
             // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
             log(`(${downloadedItem.id}) [PLATZHALTER] Scan des Downloads wurde gestartet`);
+        
+            // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
+            // --> Ersetzung als RegEx
+            downloadedItem.filename = downloadedItem.filename.replace(/\\/g, "\\\\");
+            downloadedItem.filename = downloadedItem.filename.replace(/´/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/`/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/§/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/²/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/³/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/°/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/ä/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/ö/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/ü/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/Ä/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/Ö/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/Ü/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/ß/g, ".{1}");
+            downloadedItem.filename = downloadedItem.filename.replace(/\./g, "\\.");
+            downloadedItem.filename = downloadedItem.filename.replace(/\:/g, "\\:");
+            downloadedItem.filename = downloadedItem.filename.replace(/\s/g, "\\s");
+
+            let message = {
+                "text": `SCANFILE`,
+                "filename": `${downloadedItem.filename}`
+            }
+            Queue.enqueue(() => logToHost(message, (status, result) => {
+                console.log(`Downloadscanner: ${status}`);
+            }));       
 
             // Aus Downloadhistorie entfernen
             chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
@@ -377,6 +406,10 @@ function callDownloadScan(currentDownloadId) {
     });
 }
 
+/**
+ * Nur für Debugging auf Konsole:
+ * Funktion zum Löschen des lokalen Storage
+ */
 function debugClearStorage() {
     chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht"); });
 
@@ -516,7 +549,7 @@ function setup() {
                     );
             
                     // Scan der Datei starten
-                    callDownloadScan(changed.id);
+                    runDownloadScanner(changed.id);
                   
                 }
             }
