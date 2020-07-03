@@ -414,9 +414,9 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
 }
 
 /**
- * Installation der Listener
+ * Setup-Funktion zum Registrieren aller Listener für onInstalled und onStartup-Event
  */
-chrome.runtime.onInstalled.addListener(function() {
+function setup() {
 
     // Registry-Werte einlesen/testen
     log("Policies werden eingelesen ...");
@@ -428,66 +428,75 @@ chrome.runtime.onInstalled.addListener(function() {
      * Erkennung eines Dateidownloads
      * Hinweis: beinhaltet NICHT Kontextmenüfunktion "(Bild|Link|...) Speichern unter"
      */
-    chrome.downloads.onCreated.addListener(function(item) {
-
-        // Protokollierung auf Konsole
-        // TODO: Protokollierung in Dateisystem o.ä.
-        log(
-            `(${item.id}) Download wurde gestartet ...\n` +
-            ` - id:        ${item.id} \n` +
-            ` - mime:      ${item.mime} \n` +
-            ` - filename:  ${item.filename} \n` +
-            ` - startTime: ${new Date(item.startTime).toISOString()} \n` +
-            ` - finalUrl:  ${item.finalUrl}`
-        );
-
-        // Speicherort für Download prüfen und ggf. blockieren
-        blockForbiddenDownloadLocation(item.id, item.filename);
-        
-    });
+    if(!chrome.downloads.onCreated.hasListeners()) {
+        chrome.downloads.onCreated.addListener(function(item) {
+    
+            // Protokollierung auf Konsole
+            // TODO: Protokollierung in Dateisystem o.ä.
+            log(
+                `(${item.id}) Download wurde gestartet ...\n` +
+                ` - id:        ${item.id} \n` +
+                ` - mime:      ${item.mime} \n` +
+                ` - filename:  ${item.filename} \n` +
+                ` - startTime: ${new Date(item.startTime).toISOString()} \n` +
+                ` - finalUrl:  ${item.finalUrl}`
+            );
+    
+            // Speicherort für Download prüfen und ggf. blockieren
+            blockForbiddenDownloadLocation(item.id, item.filename);
+            
+        });
+    }
 
     /**
      * Erkennung einer Statusänderung in Folge von Downloadbeginn, -abschluss oder -abbruch
      * Hinweis: beinhaltet auch Kontextmenüfunktion "Speichern unter" (nutzt nicht eingebaute Policy für Download-Pfad)
      */
-    chrome.downloads.onChanged.addListener(function(changed) {
+    if(!chrome.downloads.onChanged.hasListeners()) {
+        chrome.downloads.onChanged.addListener(function(changed) {
 
-        if (changed.filename) {
-            // Dateiname für Download wurde festgelegt (insbesondere bei Nutzung des Kontextmenüs "Speichern unter")
-
-            // Protokollierung auf Konsole
-            // TODO: Protokollierung in Dateisystem o.ä.
-            log(
-                `(${changed.id}) Dateiname wurde festgelegt ...\n` +
-                ` - filename:  ${changed.filename.current}`
-            );
-            
-            // Speicherort für Download prüfen und ggf. blockieren
-            blockForbiddenDownloadLocation(changed.id, changed.filename.current);
-            
-        } else if (changed.state) {
-
-            // Status eines Downloads hat sich verändert (Start, Abbruch, Abgeschlossen)
-
-            if (changed.state.current == 'interrupted') {
+            if (changed.filename) {
+                // Dateiname für Download wurde festgelegt (insbesondere bei Nutzung des Kontextmenüs "Speichern unter")
 
                 // Protokollierung auf Konsole
                 // TODO: Protokollierung in Dateisystem o.ä.
                 log(
-                    `(${changed.id}) Download wurde abgebrochen ...\n` +
-                    ` - error:     ${changed.error.current}`
+                    `(${changed.id}) Dateiname wurde festgelegt ...\n` +
+                    ` - filename:  ${changed.filename.current}`
                 );
+                
+                // Speicherort für Download prüfen und ggf. blockieren
+                blockForbiddenDownloadLocation(changed.id, changed.filename.current);
+                
+            } else if (changed.state) {
 
-            } else if (changed.state.current == 'complete') {
-        
-                // Protokollierung auf Konsole
-                // TODO: Protokollierung in Dateisystem o.ä.
-                log(
-                    `(${changed.id}) Download wurde abgeschlossen ...\n` +
-                    ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
-                );
+                // Status eines Downloads hat sich verändert (Start, Abbruch, Abgeschlossen)
+
+                if (changed.state.current == 'interrupted') {
+
+                    // Protokollierung auf Konsole
+                    // TODO: Protokollierung in Dateisystem o.ä.
+                    log(
+                        `(${changed.id}) Download wurde abgebrochen ...\n` +
+                        ` - error:     ${changed.error.current}`
+                    );
+
+                } else if (changed.state.current == 'complete') {
+            
+                    // Protokollierung auf Konsole
+                    // TODO: Protokollierung in Dateisystem o.ä.
+                    log(
+                        `(${changed.id}) Download wurde abgeschlossen ...\n` +
+                        ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
+                    );
+                }
             }
-        }
-    });
+        });
+    }
+}
 
-});
+// Installation der Listener bei Installation der Erweiterung
+chrome.runtime.onInstalled.addListener(setup);
+
+// Installation der Listener bei Start des Browsers
+chrome.runtime.onStartup.addListener(setup);
