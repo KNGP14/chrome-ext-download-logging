@@ -272,7 +272,7 @@ function callDownloadScan(currentDownloadId) {
             const downloadedItem = results[index];
 
             // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
-            log(`(${downloadedItem.id}) Scan des Downloads wurde gestartet`);
+            log(`(${downloadedItem.id}) [PLATZHALTER] Scan des Downloads wurde gestartet`);
 
             // Aus Downloadhistorie entfernen
             chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
