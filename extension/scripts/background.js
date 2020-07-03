@@ -348,6 +348,35 @@ function debugPrintErrorStorage() {
     });
 }
 
+
+/**
+ * Funktion zum Aufruf des Download-Scanskripts über Hostanwendung
+ * @param {integer} currentDownloadId ID des abgeschlossenen und zu scannenden Downloads
+ */
+function callDownloadScan(currentDownloadId) {
+    // DownloadItem anhand ID ermitteln
+    let searchQuery = {
+        id: currentDownloadId,
+        exists: true
+    };
+    chrome.downloads.search(searchQuery, (results)=>{
+        for (let index = 0; index < results.length; index++) {
+            const downloadedItem = results[index];
+
+            // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
+            log(`(${downloadedItem.id}) [PLATZHALTER] Scan des Downloads wurde gestartet`);
+
+            // Aus Downloadhistorie entfernen
+            chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
+                for (let idIndex = 0; idIndex < erasedIds.length; idIndex++) {
+                    log(`(${erasedIds[idIndex]}) Download aus Historie entfernt`)
+                }
+            });
+        }
+
+    });
+}
+
 function debugClearStorage() {
     chrome.storage.local.clear(() => { log("Kompletten Storage der Erweiterung gelöscht"); });
 
@@ -431,8 +460,7 @@ function setup() {
     if(!chrome.downloads.onCreated.hasListeners()) {
         chrome.downloads.onCreated.addListener(function(item) {
     
-            // Protokollierung auf Konsole
-            // TODO: Protokollierung in Dateisystem o.ä.
+            // Protokollierung
             log(
                 `(${item.id}) Download wurde gestartet ...\n` +
                 ` - id:        ${item.id} \n` +
@@ -458,8 +486,7 @@ function setup() {
             if (changed.filename) {
                 // Dateiname für Download wurde festgelegt (insbesondere bei Nutzung des Kontextmenüs "Speichern unter")
 
-                // Protokollierung auf Konsole
-                // TODO: Protokollierung in Dateisystem o.ä.
+                // Protokollierung
                 log(
                     `(${changed.id}) Dateiname wurde festgelegt ...\n` +
                     ` - filename:  ${changed.filename.current}`
@@ -469,26 +496,28 @@ function setup() {
                 blockForbiddenDownloadLocation(changed.id, changed.filename.current);
                 
             } else if (changed.state) {
-
+              
                 // Status eines Downloads hat sich verändert (Start, Abbruch, Abgeschlossen)
 
                 if (changed.state.current == 'interrupted') {
 
-                    // Protokollierung auf Konsole
-                    // TODO: Protokollierung in Dateisystem o.ä.
+                    // Protokollierung
                     log(
                         `(${changed.id}) Download wurde abgebrochen ...\n` +
                         ` - error:     ${changed.error.current}`
                     );
 
                 } else if (changed.state.current == 'complete') {
-            
-                    // Protokollierung auf Konsole
-                    // TODO: Protokollierung in Dateisystem o.ä.
+                    
+                    // Protokollierung
                     log(
                         `(${changed.id}) Download wurde abgeschlossen ...\n` +
                         ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
                     );
+            
+                    // Scan der Datei starten
+                    callDownloadScan(changed.id);
+                  
                 }
             }
         });
