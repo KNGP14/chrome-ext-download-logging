@@ -214,8 +214,9 @@ const logToHost = (message, resultFunction) => new Promise(
                     info : "Unbekannter Fehler aufgetreten",
                     messageToLog: message["text"],
                     trace : undefined,
-                    logFile: "Unbekannt",
-                    function: resultFunction
+                    logFile : undefined,
+                    scannedFiles : undefined,
+                    function : resultFunction
                 }
 
                 // Fehler auslesen
@@ -235,6 +236,7 @@ const logToHost = (message, resultFunction) => new Promise(
                         result.info = resp.status;
                         result.messageToLog = resp.recievedMessageText;
                         result.logFile = resp.logFile;
+                        result.scannedFiles = resp.scannedFiles;
 
                         if(resp.status == "SUCCESS") {
                             // Promise erfolgreich abschließen --> then()
@@ -362,38 +364,65 @@ function runDownloadScanner(currentDownloadId) {
     };
     chrome.downloads.search(searchQuery, (results)=>{
         for (let index = 0; index < results.length; index++) {
+
             const downloadedItem = results[index];
 
-            // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
-            log(`(${downloadedItem.id}) [PLATZHALTER] Scan des Downloads wurde gestartet`);
-        
-            // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
-            // --> Ersetzung als RegEx
-            downloadedItem.filename = downloadedItem.filename.replace(/\\/g, "\\\\");
-            downloadedItem.filename = downloadedItem.filename.replace(/´/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/`/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/§/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/²/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/³/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/°/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/ä/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/ö/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/ü/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/Ä/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/Ö/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/Ü/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/ß/g, ".{1}");
-            downloadedItem.filename = downloadedItem.filename.replace(/\./g, "\\.");
-            downloadedItem.filename = downloadedItem.filename.replace(/\:/g, "\\:");
-            downloadedItem.filename = downloadedItem.filename.replace(/\s/g, "\\s");
+            // Dateinamen ermitteln
+            chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
 
-            let message = {
-                "text": `SCANFILE`,
-                "filename": `${downloadedItem.filename}`
-            }
-            Queue.enqueue(() => logToHost(message, (status, result) => {
-                console.log(`Downloadscanner: ${status}`);
-            }));       
+                // Download-Pfad ermitteln
+                let gpoDownloadPath = "undefined";
+                if(!chrome.runtime.lastError) {
+                    if (value.gpoDownloadPath != "") {
+                        gpoDownloadPath = value.gpoDownloadPath;
+                    }
+                }
+                if(gpoDownloadPath != "undefined") {
+    
+                        // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
+                        // --> Ersetzung als RegEx
+                        let fileregex = downloadedItem.filename;
+
+                        fileregex = fileregex.replace(/\\/g, "\\\\");
+                        fileregex = fileregex.replace(/\:/g, "\\\:");
+                        fileregex = fileregex.replace(/\./g, "\\.");
+                        fileregex = fileregex.replace(/´/g, ".{1}");
+                        fileregex = fileregex.replace(/`/g, ".{1}");
+                        fileregex = fileregex.replace(/§/g, ".{1}");
+                        fileregex = fileregex.replace(/²/g, ".{1}");
+                        fileregex = fileregex.replace(/³/g, ".{1}");
+                        fileregex = fileregex.replace(/°/g, ".{1}");
+                        fileregex = fileregex.replace(/ä/g, ".{1}");
+                        fileregex = fileregex.replace(/ö/g, ".{1}");
+                        fileregex = fileregex.replace(/ü/g, ".{1}");
+                        fileregex = fileregex.replace(/Ä/g, ".{1}");
+                        fileregex = fileregex.replace(/Ö/g, ".{1}");
+                        fileregex = fileregex.replace(/Ü/g, ".{1}");
+                        fileregex = fileregex.replace(/ß/g, ".{1}");
+                        fileregex = fileregex.replace(/\s/g, "\\s");
+
+                        // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
+                        log(`(${downloadedItem.id}) Scan des Downloads wurde gestartet`);
+                        let message = {
+                            "text": `SCANFILE`,
+                            "path": `${gpoDownloadPath}`,
+                            "fileregex": `${fileregex}`
+                        }
+                        Queue.enqueue(() => logToHost(message, (status, result) => {
+                            if(status == "SUCCESS") {
+                                console.log({
+                                    "info": "Datei wurde zum Scannen und Bereitstellen auf Asstauschlaufwerk übergeben an nachgelagertes Skript.",
+                                    "info_details": result
+                                });
+                            } else {
+                                console.log({
+                                    "error": "Datei konnte nicht zum Scannen an nachgelagertes Skript übergeben werden!",
+                                    "error_details": result.lastError
+                                });
+                            }
+                        }));
+                }
+            });
 
             // Aus Downloadhistorie entfernen
             chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
