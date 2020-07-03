@@ -1,4 +1,8 @@
 
+// Storage-Identifier für GPOs
+const GPOLOGPATH_IDENTIFIER = "gpoLogPath";
+const GPODOWNLOADPTH_IDENTIFIER = "gpoDownloadPath";
+
 // Klasse zur Behandlung von Fehlermeldungen für popup.html
 var ErrorForPopup = class {
 
@@ -204,6 +208,7 @@ function objectToString(object) {
  */
 const logToHost = (message, resultFunction) => new Promise(
     function(resolve, reject) {
+
         // Übermittlung an Hostanwendung
         chrome.runtime.sendNativeMessage(
             "com.github.kngp14.chromium.download.policy",
@@ -212,10 +217,9 @@ const logToHost = (message, resultFunction) => new Promise(
                 // Ergebnisobjekt für catch und then
                 let result = {
                     info : "Unbekannter Fehler aufgetreten",
-                    messageToLog: message["text"],
+                    recievedMessage: message["text"],
                     trace : undefined,
-                    logFile : undefined,
-                    scannedFiles : undefined,
+                    file : undefined,
                     function : resultFunction
                 }
 
@@ -234,9 +238,8 @@ const logToHost = (message, resultFunction) => new Promise(
 
                         // Rückgabe auswerten
                         result.info = resp.status;
-                        result.messageToLog = resp.recievedMessageText;
-                        result.logFile = resp.logFile;
-                        result.scannedFiles = resp.scannedFiles;
+                        result.recievedMessage = resp.recievedMessage;
+                        result.file = resp.file;
 
                         if(resp.status == "SUCCESS") {
                             // Promise erfolgreich abschließen --> then()
@@ -282,8 +285,8 @@ const logToHost = (message, resultFunction) => new Promise(
         let errorForPopup = new ErrorForPopup(
             ErrorForPopup.TYPES.FAILEDHOSTCOMMUNICATION,
             getCurrentTimestamp(),
-            `[Fehler] Kommunikationsproblem mit Hostanwendung`,
-            [`Meldungen konnten nicht in Log-Datei geschrieben werden!`]
+            "[Fehler] Kommunikationsproblem mit Hostanwendung",
+            ["Meldungen konnten nicht in Log-Datei geschrieben werden!"]
         );
         pushErrorForPopupToStorage(errorForPopup);
 
@@ -303,13 +306,15 @@ const logToHost = (message, resultFunction) => new Promise(
 function log(msg, resultFunction) {
 
     // Log-Eintrag formatieren
-    let message = {"text": `${getCurrentTimestamp()} ${msg}`};
+    let message = {"text": getCurrentTimestamp() + " "};
     if (typeof msg == "object") {
-        message = {"text": `${getCurrentTimestamp()} ${objectToString(msg)}`};
+        message["text"] += objectToString(msg);
+    } else {
+        message["text"] += msg;
     }
 
     // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
-    message["text"] = message["text"].replace(/´/g, "?");
+    /*message["text"] = message["text"].replace(/´/g, "?");
     message["text"] = message["text"].replace(/`/g, "?");
     message["text"] = message["text"].replace(/§/g, "?");
     message["text"] = message["text"].replace(/²/g, "?");
@@ -321,14 +326,14 @@ function log(msg, resultFunction) {
     message["text"] = message["text"].replace(/Ä/g, "Ae");
     message["text"] = message["text"].replace(/Ö/g, "Oe");
     message["text"] = message["text"].replace(/Ü/g, "Ue");
-    message["text"] = message["text"].replace(/ß/g, "ss");
+    message["text"] = message["text"].replace(/ß/g, "ss");*/
 
     // Log-Pfad aus GPO auslesen
-    chrome.storage.managed.get(['gpoLogPath'], function (value) {
+    chrome.storage.managed.get([GPOLOGPATH_IDENTIFIER], function (value) {
         let gpoLogPath = "undefined";
         if(!chrome.runtime.lastError) {
             if (value.gpoLogPath != "") {
-                gpoLogPath = value.gpoLogPath;
+                gpoLogPath = value[GPOLOGPATH_IDENTIFIER];
             }
         }
         message["logpath"] = gpoLogPath;
@@ -350,7 +355,6 @@ function debugPrintErrorStorage() {
     });
 }
 
-
 /**
  * Funktion zum Aufruf des Download-Scanskripts über Hostanwendung
  * @param {integer} currentDownloadId ID des abgeschlossenen und zu scannenden Downloads
@@ -365,69 +369,33 @@ function runDownloadScanner(currentDownloadId) {
     chrome.downloads.search(searchQuery, (results)=>{
         for (let index = 0; index < results.length; index++) {
 
+            // Dateinamen einlesen
             const downloadedItem = results[index];
 
-            // Dateinamen ermitteln
-            chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
-
-                // Download-Pfad ermitteln
-                let gpoDownloadPath = "undefined";
-                if(!chrome.runtime.lastError) {
-                    if (value.gpoDownloadPath != "") {
-                        gpoDownloadPath = value.gpoDownloadPath;
-                    }
+            // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
+            log("(" + downloadedItem.id + ") Scan des Downloads wurde gestartet");
+            let message = {
+                "text": "SCANFILE",
+                "file": downloadedItem.filename
+            }
+            Queue.enqueue(() => logToHost(message, (status, result) => {
+                if(status == "SUCCESS") {
+                    console.log({
+                        "info": "Datei wurde zum Scannen und Bereitstellen auf Asstauschlaufwerk übergeben an nachgelagertes Skript.",
+                        "info_details": result
+                    });
+                } else {
+                    console.log({
+                        "error": "Datei konnte nicht zum Scannen an nachgelagertes Skript übergeben werden!",
+                        "error_details": result.lastError
+                    });
                 }
-                if(gpoDownloadPath != "undefined") {
-    
-                        // Bestimmte Zeichen verursachen Probleme bei Übergabe an das Powershell-Skript
-                        // --> Ersetzung als RegEx
-                        let fileregex = downloadedItem.filename;
-
-                        fileregex = fileregex.replace(/\\/g, "\\\\");
-                        fileregex = fileregex.replace(/\:/g, "\\\:");
-                        fileregex = fileregex.replace(/\./g, "\\.");
-                        fileregex = fileregex.replace(/´/g, ".{1}");
-                        fileregex = fileregex.replace(/`/g, ".{1}");
-                        fileregex = fileregex.replace(/§/g, ".{1}");
-                        fileregex = fileregex.replace(/²/g, ".{1}");
-                        fileregex = fileregex.replace(/³/g, ".{1}");
-                        fileregex = fileregex.replace(/°/g, ".{1}");
-                        fileregex = fileregex.replace(/ä/g, ".{1}");
-                        fileregex = fileregex.replace(/ö/g, ".{1}");
-                        fileregex = fileregex.replace(/ü/g, ".{1}");
-                        fileregex = fileregex.replace(/Ä/g, ".{1}");
-                        fileregex = fileregex.replace(/Ö/g, ".{1}");
-                        fileregex = fileregex.replace(/Ü/g, ".{1}");
-                        fileregex = fileregex.replace(/ß/g, ".{1}");
-                        fileregex = fileregex.replace(/\s/g, "\\s");
-
-                        // Message mit Dateinamen des abgeschlossenen Downloads an Host-App für Scanner
-                        log(`(${downloadedItem.id}) Scan des Downloads wurde gestartet`);
-                        let message = {
-                            "text": `SCANFILE`,
-                            "path": `${gpoDownloadPath}`,
-                            "fileregex": `${fileregex}`
-                        }
-                        Queue.enqueue(() => logToHost(message, (status, result) => {
-                            if(status == "SUCCESS") {
-                                console.log({
-                                    "info": "Datei wurde zum Scannen und Bereitstellen auf Asstauschlaufwerk übergeben an nachgelagertes Skript.",
-                                    "info_details": result
-                                });
-                            } else {
-                                console.log({
-                                    "error": "Datei konnte nicht zum Scannen an nachgelagertes Skript übergeben werden!",
-                                    "error_details": result.lastError
-                                });
-                            }
-                        }));
-                }
-            });
+            }));
 
             // Aus Downloadhistorie entfernen
             chrome.downloads.erase({ id: downloadedItem.id }, (erasedIds)=>{
                 for (let idIndex = 0; idIndex < erasedIds.length; idIndex++) {
-                    log(`(${erasedIds[idIndex]}) Download aus Historie entfernt`)
+                    log("(" + erasedIds[idIndex] + ") Download aus Historie entfernt");
                 }
             });
         }
@@ -450,36 +418,36 @@ function debugClearStorage() {
  * @param {string} currentDownloadPath Speicherort/Pfad des Downloads
  */
 function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) {
-    chrome.storage.managed.get(['gpoDownloadPath'], function (value) {
+    chrome.storage.managed.get([GPODOWNLOADPTH_IDENTIFIER], function (value) {
 
         let gpoDownloadPath = "undefined";
         if(!chrome.runtime.lastError) {
             if (value.gpoDownloadPath != "") {
-                gpoDownloadPath = value.gpoDownloadPath;
+                gpoDownloadPath = value[GPODOWNLOADPTH_IDENTIFIER];
             }
         }
 
         if (gpoDownloadPath != "undefined") {
 
-            if (currentDownloadPath != "" && !currentDownloadPath.startsWith(value.gpoDownloadPath)) {
+            if (currentDownloadPath != "" && !currentDownloadPath.startsWith(gpoDownloadPath)) {
                 // Downloadpfad nicht erlaubt
                 
                 let errorForPopup = new ErrorForPopup(
                     ErrorForPopup.TYPES.BLOCKEDDOWNLOAD,
                     getCurrentTimestamp(),
-                    `[Fehler] Compliance-Verstoss`,
-                    [`Download der Datei "${currentDownloadPath}" erfolgte nicht nach: "${value.gpoDownloadPath}"`]
+                    "[Fehler] Compliance-Verstoss",
+                    ["Download der Datei '" + currentDownloadPath + "' erfolgte nicht nach: '" + gpoDownloadPath + "'"]
                 );
-                log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]} Download wird abgebrochen ...`);
+                log("(" + currentDownloadId + ") " + errorForPopup.getTitle() + ": " + errorForPopup.getMessages()[0] + " Download wird abgebrochen ...");
 
                 // Download abbrechen
                 chrome.downloads.cancel(currentDownloadId, function() {
-                    errorForPopup.addMessage(`Download wurde abgebrochen!`);
+                    errorForPopup.addMessage("Download wurde abgebrochen!");
                     pushErrorForPopupToStorage(errorForPopup);
                 })
             } else {
                 // Downloadpfad erlaubt
-                log(`(${currentDownloadId}) Download entspricht Compliance-Vorgaben`);
+                log("(" + currentDownloadId + ") Download entspricht Compliance-Vorgaben");
             }
             
         } else {
@@ -488,15 +456,15 @@ function blockForbiddenDownloadLocation(currentDownloadId, currentDownloadPath) 
             let errorForPopup = new ErrorForPopup(
                 ErrorForPopup.TYPES.MISSINGGPO,
                 getCurrentTimestamp(),
-                `[Fehler] Fehlende Gruppenrichtlinie`,
-                [`Downloadverzeichnis wurde nicht per Gruppenrichtlinie definiert.`,
-                 `Prüfung der Downloads kann nicht erfolgen.`]
+                "[Fehler] Fehlende Gruppenrichtlinie",
+                ["Downloadverzeichnis wurde nicht per Gruppenrichtlinie definiert.",
+                 "Prüfung der Downloads kann nicht erfolgen."]
             );
-            log(`(${currentDownloadId}) ${errorForPopup.getTitle()}: ${errorForPopup.getMessages()[0]}\n${errorForPopup.getMessages()[0]}\nDownload wird abgebrochen ...`);
+            log("(" + currentDownloadId + ") " + errorForPopup.getTitle() + ": " + errorForPopup.getMessages()[0] + "\n" + errorForPopup.getMessages()[0] + "\nDownload wird abgebrochen ...");
 
             // Download abbrechen
             chrome.downloads.cancel(currentDownloadId, function() {
-                errorForPopup.addMessage(`Download wurde abgebrochen!`);
+                errorForPopup.addMessage("Download wurde abgebrochen!");
                 pushErrorForPopupToStorage(errorForPopup);
             })
 
@@ -512,7 +480,7 @@ function setup() {
     // Registry-Werte einlesen/testen
     log("Policies werden eingelesen ...");
     chrome.storage.managed.get(function(policiesObject) {
-        log(`Eingelesene Policies: ${objectToString(policiesObject)}`);
+        log("Eingelesene Policies: " + objectToString(policiesObject));
     });
 
     /**
@@ -524,12 +492,12 @@ function setup() {
     
             // Protokollierung
             log(
-                `(${item.id}) Download wurde gestartet ...\n` +
-                ` - id:        ${item.id} \n` +
-                ` - mime:      ${item.mime} \n` +
-                ` - filename:  ${item.filename} \n` +
-                ` - startTime: ${new Date(item.startTime).toISOString()} \n` +
-                ` - finalUrl:  ${item.finalUrl}`
+                "(" + item.id + ") Download wurde gestartet ...\n" +
+                " - id:        " + item.id + " \n" +
+                " - mime:      " + item.mime + " \n" +
+                " - filename:  " + item.filename + " \n" +
+                " - startTime: " + new Date(item.startTime).toISOString() + " \n" +
+                " - finalUrl:  " + item.finalUrl
             );
     
             // Speicherort für Download prüfen und ggf. blockieren
@@ -550,8 +518,8 @@ function setup() {
 
                 // Protokollierung
                 log(
-                    `(${changed.id}) Dateiname wurde festgelegt ...\n` +
-                    ` - filename:  ${changed.filename.current}`
+                    "(" + changed.id + ") Dateiname wurde festgelegt ...\n" +
+                    " - filename:  " + changed.filename.current
                 );
                 
                 // Speicherort für Download prüfen und ggf. blockieren
@@ -561,20 +529,20 @@ function setup() {
               
                 // Status eines Downloads hat sich verändert (Start, Abbruch, Abgeschlossen)
 
-                if (changed.state.current == 'interrupted') {
+                if (changed.state.current == "interrupted") {
 
                     // Protokollierung
                     log(
-                        `(${changed.id}) Download wurde abgebrochen ...\n` +
-                        ` - error:     ${changed.error.current}`
+                        "(" + changed.id + ") Download wurde abgebrochen ...\n" +
+                        " - error:     " + changed.error.current
                     );
 
-                } else if (changed.state.current == 'complete') {
+                } else if (changed.state.current == "complete") {
                     
                     // Protokollierung
                     log(
-                        `(${changed.id}) Download wurde abgeschlossen ...\n` +
-                        ` - endTime:   ${new Date(changed.endTime.current).toISOString()}`
+                        "(" + changed.id + ") Download wurde abgeschlossen ...\n" +
+                        " - endTime:   " + new Date(changed.endTime.current).toISOString()
                     );
             
                     // Scan der Datei starten
